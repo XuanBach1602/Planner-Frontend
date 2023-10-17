@@ -1,0 +1,17 @@
+.task {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: solid 0.3px #94A6B2;
+    border-radius: 5px;
+    padding: 5px 5px 5px 15px
+}
+
+.task-name {
+    display: flex;
+    align-items: baseline;
+}
+
+.status-box {
+    margin-right: 5px;
+}
