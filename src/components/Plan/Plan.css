@@ -1,3 +1,26 @@
+.plan-page {
+    width: 100%;
+    height: 100%;
+    background: url(https://cdn.hubblecontent.osi.office.net/getty/publish/gettyimages/gettyimages-666727842_super.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    z-index: 0;
+    position: relative;
+}
+
+.plan-page::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: -1;
+    top: 0px;
+    left: 0px;
+    background: linear-gradient(rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.2) 50%);
+}
+
 .nav-bar {
     display: flex;
     padding: 10px;
@@ -15,6 +38,10 @@
     margin: 0 30px 0 80px;
     display: flex;
     gap: 20px;
+}
+
+.active {
+    border-bottom:solid 0.3px #42AB11;
 }
 
 .avatars {

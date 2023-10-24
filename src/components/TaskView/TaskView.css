@@ -1,0 +1,65 @@
+.task-detail .ant-modal-content{
+    width: 600px;
+    /* height: 400px; */
+    margin: auto;
+    padding: 20px;
+    gap: 25px;
+}
+
+.task-name {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1.5em;
+    font-weight: 600;
+    border: none;
+}
+
+.task-name-input {
+    border: none;
+    padding-left: 0;
+    font-weight: 400;
+    font-size: 20px;
+}
+
+.selection-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 10px;
+
+}
+
+.progress-container {
+    display: grid;
+    margin: 10px 0;
+    grid-template-columns: 1fr 1fr;
+}
+
+.progress-container >* {
+    margin-left: 0px;
+}
+
+.status-selection {
+    background-color: white;
+}
+
+.file-input  {
+    margin-top: 15px;
+    display: none;
+    margin-bottom: 15px;
+}
+
+.attachment-label {
+    margin-top: 10px;
+    padding: 5px;
+    border: solid 0.3px gray;
+    /* cursor: pointer; */
+}
+
+.attachment-label :hover {
+    background-color: red !important;
+}
+
+#delete-file-icon :hover{
+    cursor: pointer;
+    color: red;
+}
