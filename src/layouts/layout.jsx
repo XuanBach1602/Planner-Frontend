@@ -1,5 +1,6 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import "./layout.css";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AddIcon from "@mui/icons-material/Add";
@@ -9,15 +10,15 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import { Modal } from "antd";
 import { Input, Form } from "antd";
 import { Select } from "antd";
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { Outlet } from "react-router-dom";
 
 function MainLayout({ children }) {
   const [open, setOpen] = useState(false);
-  const [shouldCloseModal, setShouldCloseModal] = useState(false);
-
-  const [planName, setPLanName] = useState(" ");
-  const [privacy, setPrivacy] = useState("Private");
-
+  const [planName, setPLanName] = useState("");
+  const [privacy, setPrivacy] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
+  const [isValidInput, setIsValidInput] = useState(false);
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -25,18 +26,45 @@ function MainLayout({ children }) {
     setMenuOpen(!menuOpen);
   };
 
+  const checkValidInput = () => {
+    var bool = planName !== "";
+    setIsValidInput(bool);
+  };
 
-  const Create = () => {
-    console.log(planName);
-    if (planName !== undefined && planName.trim() !== "") {
-      setShouldCloseModal(true);
-      console.log("Tạo thành công");
+  useEffect(() => checkValidInput(), [planName]);
+  // useEffect(()=>{
+  //   document.getElementById("planName").value = "";
+  // },[planName])
+
+  const addNewPlan = async (e) => {
+    e.preventDefault();
+    console.log(planName, privacy);
+    var createUserID = "9b6f1133-b512-4155-931b-e32d90b4e823";
+    if (isValidInput) {
+      const data = {
+        name: planName,
+        isPrivacy: privacy,
+        createdUserID:createUserID
+      };
+      try {
+        const res = await axios.post("https://localhost:44302/api/plan", data);
+        console.log(res);
+        setValidationMessage("");
+        document.getElementById("planName").value = "";
+        setPrivacy(true);
+        // setPLanName("");
+        setOpen(false);
+        
+        
+      } catch (error) {
+        console.log(error);
+        setValidationMessage("Please refill in form");
+      }
     } else {
-      // Nếu planName rỗng, không đóng Modal
-      setShouldCloseModal(false);
-      console.log("Vui lòng điền tên kế hoạch.");
+      setValidationMessage("Please fill in form");
     }
   };
+
 
   const text = `
   A dog is a type of domesticated animal.
@@ -56,50 +84,8 @@ function MainLayout({ children }) {
     },
   ];
 
-  const accounts = [
-    {
-      key: "1",
-      label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.antgroup.com"
-        >
-          1st menu item
-        </a>
-      ),
-    },
-    {
-      key: "2",
-      label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.aliyun.com"
-        >
-          2nd menu item
-        </a>
-      ),
-    },
-    {
-      key: "3",
-      label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.luohanacademy.com"
-        >
-          3rd menu item
-        </a>
-      ),
-    },
-  ];
-
-
-
   return (
-    <div>
-      <div className="main">
+    <div className="main" style={{ width: "100%", height: "100%" }}>
       {/* Navbar */}
       <header className="nav_bar">
         <div className="title">Planner</div>
@@ -115,18 +101,24 @@ function MainLayout({ children }) {
                 id="dropdownMenuButton1"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
-                style={{backgroundColor:"none"}}
+                style={{ backgroundColor: "none" }}
               >
-                <img src="https://antimatter.vn/wp-content/uploads/2023/01/hinh-anh-avatar-dep-cute-ngau.jpg" alt="" srcSet="" style={{
-                  width:"30px",
-                  height: "30px",
-                  borderRadius:"100%"
-                }}/>
+                <img
+                  src="https://antimatter.vn/wp-content/uploads/2023/01/hinh-anh-avatar-dep-cute-ngau.jpg"
+                  alt=""
+                  srcSet=""
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    borderRadius: "100%",
+                  }}
+                />
               </div>
-              <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                <li style={{marginLeft:"15px"}}>
-                     Nguyễn Xuân Bách
-                </li>
+              <ul
+                className="dropdown-menu"
+                aria-labelledby="dropdownMenuButton1"
+              >
+                <li style={{ marginLeft: "15px" }}>Nguyễn Xuân Bách</li>
                 <li>
                   <a className="dropdown-item" href="#">
                     Account infomation
@@ -151,7 +143,9 @@ function MainLayout({ children }) {
       {/* Menu */}
       <div className="container-page">
         <div className={`menu ${menuOpen ? "hidden" : ""}`}>
-          <button className="slide-button" onClick={toggleMenu}>☰</button>
+          <button className="slide-button" onClick={toggleMenu}>
+            ☰
+          </button>
           <div className="menu-item" onClick={() => setOpen(true)}>
             <AddIcon /> New plan
           </div>
@@ -161,13 +155,14 @@ function MainLayout({ children }) {
             title="New plan"
             centered
             open={open}
-            onOk={() => {
-              Create(); // Gọi hàm Create
-              if (shouldCloseModal) {
-                setOpen(false); // Nếu shouldCloseModal là true, đóng Modal
-              }
+            onOk={(e) => {
+              setPLanName("");
+              addNewPlan(e);
             }}
-            onCancel={() => setOpen(false)}
+            onCancel={() => {
+              setPLanName("");
+              setOpen(false);
+            }}
             width={1100}
             height={600}
             style={{}}
@@ -189,39 +184,47 @@ function MainLayout({ children }) {
                       },
                     ]}
                   >
-                    <Input
+                    <Input className="planName-input"
                       placeholder="Fill your plan name"
                       onChange={(e) => setPLanName(e.target.value)}
                     />
                   </Form.Item>
+                  <span
+                  className="validation-add-plan"
+                  style={{ color: "#FF0F00" }}
+                >
+                  {validationMessage}
+                </span>
                 </Form>
+                
                 <Select
                   defaultValue="Private"
                   style={{
                     marginTop: 30,
                     width: 200,
                   }}
-                  onChange={setPrivacy}
+                  onChange={(value) => setPrivacy(value)}
                   options={[
                     {
                       label: "Privacy",
                       options: [
                         {
                           label: "Private",
-                          value: "Private",
+                          value: false,
                         },
                         {
                           label: "Public",
-                          value: "Public",
+                          value: true,
                         },
                       ],
                     },
                   ]}
                 />
+                
               </div>
+              
             </div>
           </Modal>
-
 
           <div className="menu-item">
             <HomeIcon /> Hub
@@ -235,12 +238,11 @@ function MainLayout({ children }) {
             style={{ border: "none", backgroundColor: "white" }}
           />
         </div>
-        <div style={{ height: "580px", borderLeft: "1px solid black" }}></div>
+        {/* <div style={{ height: "580px", borderLeft: "1px solid black" }}></div> */}
         <div className="content">
-          {children}
-          </div>
+          <Outlet />
+        </div>
       </div>
-    </div>
     </div>
   );
 }

@@ -1,8 +1,46 @@
-.board {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+.board-container {
+  display: flex;
+  width: 100%;
+  overflow: auto;
+
+}
+
+.category-box {
+  width: 250px;
 }
 
 .board-item {
-    margin-left: 15px;
+  margin-left: 15px;
+}
+
+.add-task-btn {
+  background-color: white;
+}
+
+.add-task-btn:hover {
+  color: #56b3f4;
+  border-color: #56b3f4;
+  cursor: pointer;
+}
+
+/* Category */
+.category-input {
+  background-color: transparent;
+  padding: 5px;
+  font-weight: 500;
+  font-size: 20px;
+  outline: none; 
+  border: none;
+}
+
+.category-input::placeholder {
+  color: black;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.category-input:focus {
+    /* outline: none; */
+    background-color: white;
+    border-bottom-color: #007bff; 
 }

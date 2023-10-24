@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Plan.css";
 import { DownOutlined } from "@ant-design/icons";
 import { Dropdown, Space, Button } from "antd";
 import Board from "../Board/Board";
 import { PlusOutlined } from "@ant-design/icons";
+import { Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Plan({children}) {
+  const [activeId, setActiveId] = useState(0);
+  const navigate = useNavigate();
   // List of members
   const items = [
     {
@@ -22,6 +26,17 @@ function Plan({children}) {
     },
   ];
 
+  const features = [
+    { id: 1, name: 'Grid' },
+    { id: 2, name: 'Board' },
+    { id: 3, name: 'Charts' },
+    { id: 4, name: 'Schedule' },
+  ];
+
+  const handleFeatureClick = (id) => {
+    setActiveId(id);
+  }
+
   return (
     <div className="plan-page">
         <div className="nav-bar">
@@ -30,10 +45,18 @@ function Plan({children}) {
       </div>
       <div className="Title">Learn Dot Net</div>
       <div className="features">
-        <div className="grid feature">Grid</div>
+        {/* <div className="grid feature">Grid</div>
         <div className="Board feature">Board</div>
         <div className="Charts feature">Charts</div>
-        <div className="Schedule feature">Schedule</div>
+        <div className="Schedule feature">Schedule</div> */}
+        {features.map((feature) => (
+          <div key={feature.id} className= {`feature ${feature.id == activeId? 'active': ''}`} onClick={() => {
+            handleFeatureClick(feature.id);
+            navigate(`/plan/${feature.name}`)
+          }}>
+            {feature.name}
+          </div>
+        ))}
       </div>
 
       <img
@@ -60,13 +83,8 @@ function Plan({children}) {
       <div className="Filters">Filter</div>
     </div>
     <div className="switch-page">
-        <div className="add-task-btn">
-        <PlusOutlined style={{
-          fontSize:"16px",
-          marginBottom:"5px"
-      }} /> Add Task
-        </div>
-        <Board />
+        {/* <Board /> */}
+        <Outlet/>
     </div>
     </div>
   );
