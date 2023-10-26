@@ -111,3 +111,32 @@
     font-size: 14px;
     color: #999999;
 }
+
+
+/* Plan list */
+.plan-list .ant-collapse-content-box {
+    border: "none";
+    background-color: "white";
+   padding: 0 !important;
+}
+
+
+.plan-box {
+    display: flex;
+    align-items: center;
+    padding: 6px;
+}
+
+.plan-box:hover {
+    background-color: #C6C8B0;
+}
+
+.plan-img {
+    display: flex;
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}

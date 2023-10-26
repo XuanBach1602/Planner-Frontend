@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Navigate, useNavigate } from "react-router-dom";
 import "./SignIn.css";
 import { Input, Form, Button } from "antd";
+import { useUser } from "../../UserContext";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [validation, setValidation] = useState("");
-  const Post = async (e) => {
-    e.preventDefault();
+  const {user,setUser, setIsAuthenticated} = useUser();
+  const navigate = useNavigate();
+  const Post = async () => {
     var isValid = (email !== "") && (password !== "");
-    console.log(email, password);
-    console.log(isValid);
+    // console.log(email, password);
+    // console.log(isValid);
     if (!isValid) {
       setValidation("Please fill in form");
     } else {
@@ -21,8 +24,12 @@ const SignIn = () => {
           password: password
         }
         const res = await axios.post("https://localhost:44302/auth/SignIn",data);
-        console.log(res);
+        // console.log(res);
+        setIsAuthenticated(true);
+        setUser(res.data.userInfo);
+        // console.log(res.data.userInfo);
         setValidation("");
+        navigate("/");
       } catch (error) {
         setValidation("Wrong password or email");
         console.log(error);
@@ -70,7 +77,7 @@ const SignIn = () => {
           <span className="validation-all-signin" style={{ color: "#FF0F00" }}>
             {validation}
           </span>
-          <Button type="primary" >
+          <Button type="primary" onClick={() => Post()}>
             Log In
           </Button>
           <p className="signIn">

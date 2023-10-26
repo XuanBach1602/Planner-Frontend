@@ -1,14 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Plan.css";
+import axios from "axios";
 import { DownOutlined } from "@ant-design/icons";
 import { Dropdown, Space, Button } from "antd";
+import { useParams } from "react-router-dom";
 import Board from "../Board/Board";
 import { PlusOutlined } from "@ant-design/icons";
 import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../UserContext";
 
 function Plan({children}) {
+  const {user} = useUser();
+  const {id} = useParams();
   const [activeId, setActiveId] = useState(0);
+  const [plan, setPlan] = useState({});
+  const [planName, setPLanName] = useState("");
   const navigate = useNavigate();
   // List of members
   const items = [
@@ -37,22 +44,32 @@ function Plan({children}) {
     setActiveId(id);
   }
 
+  const fetchPlanData = async() => {
+    try {
+      const res = await axios.get(`https://localhost:44302/api/plan/${id}`);
+      setPlan(res.data);
+      // console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchPlanData();
+  },[])
+
   return (
     <div className="plan-page">
         <div className="nav-bar">
       <div className="">
-        <img className="plan-avatar" src="https://antimatter.vn/wp-content/uploads/2023/01/hinh-anh-avatar-dep-cute-ngau.jpg" alt="" />
+        <div className="plan-avatar">{(plan.name == null)? '': plan.name[0]}</div>
       </div>
-      <div className="Title">Learn Dot Net</div>
+      <div className="Title">{plan.name}</div>
       <div className="features">
-        {/* <div className="grid feature">Grid</div>
-        <div className="Board feature">Board</div>
-        <div className="Charts feature">Charts</div>
-        <div className="Schedule feature">Schedule</div> */}
-        {features.map((feature) => (
+        {features.map((feature, index) => (
           <div key={feature.id} className= {`feature ${feature.id == activeId? 'active': ''}`} onClick={() => {
             handleFeatureClick(feature.id);
-            navigate(`/plan/${feature.name}`)
+            navigate(`/plan/${id}/${feature.name}`)
           }}>
             {feature.name}
           </div>
@@ -64,7 +81,7 @@ function Plan({children}) {
         src="https://i0.wp.com/thatnhucuocsong.com.vn/wp-content/uploads/2022/09/avatar-doremon-1.jpg?ssl=1"
         alt=""
       />
-      <div>Nguyễn Xuân Bách 20204714</div>
+      <div>{user.name}</div>
       <div className="Members member-dropdown">
         <Dropdown
           menu={{
@@ -84,7 +101,7 @@ function Plan({children}) {
     </div>
     <div className="switch-page">
         {/* <Board /> */}
-        <Outlet/>
+        <Outlet context={[id]} />
     </div>
     </div>
   );

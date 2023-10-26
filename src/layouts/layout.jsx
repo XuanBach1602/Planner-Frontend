@@ -1,5 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./layout.css";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -12,6 +13,7 @@ import { Input, Form } from "antd";
 import { Select } from "antd";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { Outlet } from "react-router-dom";
+import { useUser } from "../UserContext";
 
 function MainLayout({ children }) {
   const [open, setOpen] = useState(false);
@@ -19,8 +21,13 @@ function MainLayout({ children }) {
   const [privacy, setPrivacy] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
   const [isValidInput, setIsValidInput] = useState(false);
+  const [planList, setPlanList] = useState([]);
 
+  const {user, setUser, setIsAuthenticated} = useUser();
+  const avatarUrl = `https://localhost:44302/api/File/${user.imgUrl}`;
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -31,6 +38,12 @@ function MainLayout({ children }) {
     setIsValidInput(bool);
   };
 
+  const signOut = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+    navigate("/signin");
+  }
+
   useEffect(() => checkValidInput(), [planName]);
   // useEffect(()=>{
   //   document.getElementById("planName").value = "";
@@ -38,8 +51,8 @@ function MainLayout({ children }) {
 
   const addNewPlan = async (e) => {
     e.preventDefault();
-    console.log(planName, privacy);
-    var createUserID = "9b6f1133-b512-4155-931b-e32d90b4e823";
+    // console.log(planName, privacy);
+    var createUserID = user.id;
     if (isValidInput) {
       const data = {
         name: planName,
@@ -48,7 +61,7 @@ function MainLayout({ children }) {
       };
       try {
         const res = await axios.post("https://localhost:44302/api/plan", data);
-        console.log(res);
+        // console.log(res);
         setValidationMessage("");
         document.getElementById("planName").value = "";
         setPrivacy(true);
@@ -64,6 +77,19 @@ function MainLayout({ children }) {
       setValidationMessage("Please fill in form");
     }
   };
+  
+
+  const fetchPlanData = async () => {
+    try {
+      const res = await axios.get(`https://localhost:44302/api/plan/GetByUserID/${user.id}`);
+      // console.log(res);
+      setPlanList(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
 
 
   const text = `
@@ -75,7 +101,16 @@ function MainLayout({ children }) {
     {
       key: "1",
       label: "Pinned",
-      children: <p>{text}</p>,
+      children: <div className="" >
+        {planList.map((plan,index) =>(
+          <div className="plan-box" onClick={() => navigate(`/plan/${plan.id}`)} key={index}>
+          <div className="plan-img" style={{backgroundColor: "#CB20C6"}}>{plan.name[0]}</div>
+          {plan.name}
+          </div>
+          
+        ))}
+        
+      </div>
     },
     {
       key: "2",
@@ -83,6 +118,12 @@ function MainLayout({ children }) {
       children: <p>{text}</p>,
     },
   ];
+
+ 
+
+  useEffect(() =>{
+    fetchPlanData();
+  },[])
 
   return (
     <div className="main" style={{ width: "100%", height: "100%" }}>
@@ -104,8 +145,8 @@ function MainLayout({ children }) {
                 style={{ backgroundColor: "none" }}
               >
                 <img
-                  src="https://antimatter.vn/wp-content/uploads/2023/01/hinh-anh-avatar-dep-cute-ngau.jpg"
-                  alt=""
+                  // src= {avatarUrl}
+                  alt="avatar"
                   srcSet=""
                   style={{
                     width: "30px",
@@ -118,7 +159,7 @@ function MainLayout({ children }) {
                 className="dropdown-menu"
                 aria-labelledby="dropdownMenuButton1"
               >
-                <li style={{ marginLeft: "15px" }}>Nguyễn Xuân Bách</li>
+                <li style={{ marginLeft: "15px" }}>{user.name}</li>
                 <li>
                   <a className="dropdown-item" href="#">
                     Account infomation
@@ -130,7 +171,7 @@ function MainLayout({ children }) {
                   </a>
                 </li>
                 <li>
-                  <a className="dropdown-item" href="#">
+                  <a className="dropdown-item" onClick={() => signOut()} >
                     Sign Out
                   </a>
                 </li>
@@ -235,7 +276,8 @@ function MainLayout({ children }) {
           <Collapse
             items={items}
             defaultActiveKey={["0"]}
-            style={{ border: "none", backgroundColor: "white" }}
+            
+            className="plan-list"
           />
         </div>
         {/* <div style={{ height: "580px", borderLeft: "1px solid black" }}></div> */}
@@ -245,6 +287,6 @@ function MainLayout({ children }) {
       </div>
     </div>
   );
-}
+ }
 
 export default MainLayout;

@@ -7,6 +7,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { DatePicker } from "antd";
 import { UserAddOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Select, Space } from "antd";
+import { useUser } from "../../UserContext";
 dayjs.extend(customParseFormat);
 
 const TaskView = (props) => {
@@ -24,6 +25,7 @@ const TaskView = (props) => {
   const [isValidInput, setIsValidInput] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const { TextArea } = Input;
+  const {user} = useUser();
 
   const handleProgressChange = (value) => {
     setProgress(value);
@@ -66,8 +68,8 @@ const TaskView = (props) => {
           startDate: startDate,
           dueDate: dueDate,
           categoryID: 1,
-          createdUserID: "9b6f1133-b512-4155-931b-e32d90b4e823",
-          assignedUserID: "9b6f1133-b512-4155-931b-e32d90b4e823",
+          createdUserID: user.id,
+          assignedUserID: user.id,
         };
         console.log(data);
         const res = await axios.post(

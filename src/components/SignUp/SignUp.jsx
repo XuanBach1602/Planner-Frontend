@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Input, Form, Button } from "antd";
 import "./SignUp.css";
@@ -10,6 +11,7 @@ const SignUp = () => {
   const [passwordComfirm, setComfirmPassword] = useState("");
   const [isValidInput, setIsValidInput] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
+  const navigate = useNavigate();
 
   const CheckValidInput = () => {
     let bool =
@@ -22,20 +24,24 @@ const SignUp = () => {
     setIsValidInput(bool);
   };
 
-  const SignUp = async (e) => {
-    e.preventDefault();
+  const SignUp = async () => {
     console.log(isValidInput);
     console.log(name, email, password, passwordComfirm, phoneNumber);
     if (isValidInput) {
       try {
-        const data = {
-          name: name,
-          email: email,
-          password: password,
-          phonenumber: phoneNumber,
-        };
-        var res = await axios.post("https://localhost:44302/auth/SignUp", data);
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("email", email);
+        formData.append("password", password);
+        formData.append("phoneNumber", phoneNumber);
+        var res = await axios.post("https://localhost:44302/auth/SignUp", formData,
+        {
+          headers:{
+            "Content-Type": "multipart/form-data",
+          }
+        });
         setValidationMessage("");
+        navigate("/signin");
         console.log(res);
       } catch (error) {
         console.log(error);
@@ -137,7 +143,7 @@ const SignUp = () => {
           <span className="validation-all-signin" style={{ color: "#FF0F00" }}>
             {validationMessage}
           </span>
-          <Button type="primary" >
+          <Button type="primary" onClick={() => SignUp()}>
             Create account
           </Button>
           <p className="signIn">
