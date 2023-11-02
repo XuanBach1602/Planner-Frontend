@@ -134,6 +134,7 @@ const SignUp = () => {
               ]}
             >
               <Input
+              type="number"
                 className="data-input"
                 placeholder="Fill your phone number"
                 onChange={(e) => setPhoneNumber(e.target.value)}

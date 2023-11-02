@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 import { Navigate } from "react-router-dom";
 import "./App.css";
 import MainLayout from "./layouts/layout";
@@ -10,6 +15,7 @@ import SignIn from "./components/SignIn/SignIn";
 import Board from "./components/Board/Board";
 import TaskView from "./components/TaskView/TaskView";
 import Schedule from "./components/Schedule/Schedule";
+import Account from "./components/Account/Account";
 import { useUser } from "./UserContext";
 
 function App() {
@@ -20,13 +26,19 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/TaskView" element={<TaskView />} />
-        {!isAuthenticated && <Route path="*" element={<Navigate to="/signin" />} />}
+
+        {!isAuthenticated && (
+          <Route path="*" element={<Navigate to="/signin" />} />
+        )}
         {isAuthenticated && (
-          <Route path="/" element={<MainLayout />}>
-            <Route path="/" element={<Hub />} />
-            <Route path="/plan/:id" element={<Plan />}>
-              <Route path="board" element={<Board />} />
-              <Route path="schedule" element={<Schedule />} />
+          <Route>
+            <Route path="/Account" element={<Account />} />
+            <Route path="/" element={<MainLayout />}>
+              <Route path="/" element={<Hub />} />
+              <Route path="/plan/:id" element={<Plan />}>
+                <Route path="board" element={<Board />} />
+                <Route path="schedule" element={<Schedule />} />
+              </Route>
             </Route>
           </Route>
         )}

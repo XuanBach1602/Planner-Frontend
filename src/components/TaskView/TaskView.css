@@ -63,3 +63,18 @@
     cursor: pointer;
     color: red;
 }
+
+.delete-task-icon {
+    margin-top: 10px !important;
+    font-size: 24px;
+}
+
+.delete-task-box:hover {
+    cursor: pointer;
+    color: red;
+}
+
+.delete-task-box {
+    position: relative;
+    top: 40px;  
+}

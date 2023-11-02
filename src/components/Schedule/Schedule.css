@@ -21,3 +21,11 @@
   .calendar-table{
     margin: 20px;
   }
+
+  .startDate {
+    color: aqua !important  ;
+  }
+
+  .endDate {
+    color: red;
+  }

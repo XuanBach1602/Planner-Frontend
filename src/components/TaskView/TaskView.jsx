@@ -11,21 +11,35 @@ import { useUser } from "../../UserContext";
 dayjs.extend(customParseFormat);
 
 const TaskView = (props) => {
+  const selectedTask = props.selectedTask;
+  const categoryId = props.categoryId;
+  const showModal = props.showModal;
+  const hideModal = props.hideModal;
+  const setIsTaskUpdate = props.setIsTaskUpdate;
+  const [isAddTask, setIsAddTask] = useState(true);
 
-  const ShowModal = props.ShowModal;
-  const HideModal = props.HideModal;
-
+  const [files, setFiles] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const { TextArea } = Input;
+  const { user } = useUser();
   const [taskName, setTaskName] = useState("Dang thu");
   const [progress, setProgress] = useState("In progress");
   const [priority, setPriority] = useState("Medium");
   const [startDate, setStartDate] = useState("2023-10-03");
   const [dueDate, setDueDate] = useState("2023-10-03");
   const [description, setDescription] = useState("Oke e den day di");
-  const [files, setFiles] = useState([]);
   const [isValidInput, setIsValidInput] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const { TextArea } = Input;
-  const {user} = useUser();
+
+  useEffect(() => {
+    if (selectedTask != null) {
+      setTaskName(selectedTask?.name);
+      setDescription(selectedTask?.description);
+      setProgress(selectedTask?.status);
+      setPriority(selectedTask?.priority);
+      setDueDate(selectedTask?.dueDate);
+      setStartDate(selectedTask?.startDate);
+    }
+  }, [selectedTask]);
 
   const handleProgressChange = (value) => {
     setProgress(value);
@@ -36,7 +50,9 @@ const TaskView = (props) => {
   };
 
   const checkValid = () => {
-    var isValid = taskName.trim() !== "";
+    // var isValid = taskName.trim() !== "";
+    var isValid = taskName !== "";
+
     setIsValidInput(isValid);
   };
 
@@ -67,10 +83,11 @@ const TaskView = (props) => {
           priority: priority,
           startDate: startDate,
           dueDate: dueDate,
-          categoryID: 1,
+          categoryID: categoryId,
           createdUserID: user.id,
           assignedUserID: user.id,
         };
+
         console.log(data);
         const res = await axios.post(
           "https://localhost:44302/api/worktask",
@@ -78,16 +95,68 @@ const TaskView = (props) => {
         );
         console.log(res);
         setErrorMessage("");
-        HideModal();
+        setIsTaskUpdate(true);
+        hideModal();
       } catch (error) {
         console.log(error);
         setErrorMessage("Refill the form");
-        HideModal();
+        hideModal();
       }
     } else {
       setErrorMessage("Please fill the form");
     }
   };
+
+  const updateTask = async () => {
+    console.log(selectedTask);
+    if (isValidInput) {
+      try {
+        const data = {
+          id: selectedTask.id,
+          name: taskName,
+          description: description,
+          status: progress,
+          priority: priority,
+          startDate: startDate,
+          dueDate: dueDate,
+          categoryID: selectedTask.categoryId,
+          createdUserID: user.id,
+          assignedUserID: user.id,
+        };
+
+        console.log(data);
+        const res = await axios.put(
+          "https://localhost:44302/api/worktask",
+          data
+        );
+        console.log(res);
+        setErrorMessage("");
+        setIsTaskUpdate(true);
+        hideModal();
+      } catch (error) {
+        console.log(error);
+        setErrorMessage("Refill the form");
+        hideModal();
+      }
+    } else {
+      setErrorMessage("Please fill the form");
+    }
+  };
+
+  const deleteTask = async () => {
+    try {
+      const res = await axios.delete(
+        `https://localhost:44302/api/worktask?id=${selectedTask.id}`
+      );
+      setIsTaskUpdate(true);
+      setErrorMessage("");
+      setIsTaskUpdate(true);
+      hideModal();
+    } catch (error) {
+      console(error);
+    }
+  };
+
   const items = [
     {
       label: <a href="https://www.antgroup.com">1st menu item</a>,
@@ -113,10 +182,10 @@ const TaskView = (props) => {
       className="task-detail"
       centered
       zIndex={2}
-      open={ShowModal}
-      onOk={() => addNewTask()}
-      onCancel={() => HideModal()}
-      okText="Add new task"
+      open={showModal}
+      onOk={() => (selectedTask === null ? addNewTask() : updateTask())}
+      onCancel={() => hideModal()}
+      okText={selectedTask === null ? "Add new task" : "Update task"}
     >
       <div className="task-name">
         <Input
@@ -275,6 +344,15 @@ const TaskView = (props) => {
       <span id="error-message" style={{ color: "red" }}>
         {errorMessage}
       </span>
+      {selectedTask != null && (
+        <div className="delete-task-box">
+          <DeleteOutlined
+            className="delete-task-icon"
+            onClick={() => deleteTask()}
+          />
+          Delete
+        </div>
+      )}
     </Modal>
   );
 };

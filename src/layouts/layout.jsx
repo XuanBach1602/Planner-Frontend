@@ -22,7 +22,7 @@ function MainLayout({ children }) {
   const [validationMessage, setValidationMessage] = useState("");
   const [isValidInput, setIsValidInput] = useState(false);
   const [planList, setPlanList] = useState([]);
-
+  const [isPlanUpdate, setIsPlanUpdate] = useState(false);
   const {user, setUser, setIsAuthenticated} = useUser();
   const avatarUrl = `https://localhost:44302/api/File/${user.imgUrl}`;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -61,11 +61,11 @@ function MainLayout({ children }) {
       };
       try {
         const res = await axios.post("https://localhost:44302/api/plan", data);
-        // console.log(res);
+        console.log(res);
         setValidationMessage("");
-        document.getElementById("planName").value = "";
         setPrivacy(true);
-        // setPLanName("");
+        // document.querySelector("planName-input").target.value = "";
+        setIsPlanUpdate(true);
         setOpen(false);
         
         
@@ -123,7 +123,8 @@ function MainLayout({ children }) {
 
   useEffect(() =>{
     fetchPlanData();
-  },[])
+    setIsPlanUpdate(false);
+  },[isPlanUpdate])
 
   return (
     <div className="main" style={{ width: "100%", height: "100%" }}>
@@ -161,7 +162,7 @@ function MainLayout({ children }) {
               >
                 <li style={{ marginLeft: "15px" }}>{user.name}</li>
                 <li>
-                  <a className="dropdown-item" href="#">
+                  <a className="dropdown-item" href="/account">
                     Account infomation
                   </a>
                 </li>
@@ -191,8 +192,28 @@ function MainLayout({ children }) {
             <AddIcon /> New plan
           </div>
 
-          {/* Modal */}
-          <Modal
+          <div className="menu-item">
+            <HomeIcon /> Hub
+          </div>
+          <div className="menu-item">
+            <PersonOutlineIcon /> Assigned to me
+          </div>
+          <Collapse
+            items={items}
+            defaultActiveKey={["0"]}
+            
+            className="plan-list"
+          />
+        </div>
+        {/* <div style={{ height: "580px", borderLeft: "1px solid black" }}></div> */}
+        <div className="content">
+          <Outlet context={[setIsPlanUpdate]}/>
+        </div>
+      </div>
+
+
+       {/* Modal */}
+       <Modal
             title="New plan"
             centered
             open={open}
@@ -228,6 +249,7 @@ function MainLayout({ children }) {
                     <Input className="planName-input"
                       placeholder="Fill your plan name"
                       onChange={(e) => setPLanName(e.target.value)}
+                      onBlur={(e) => e.target.value = ""}
                     />
                   </Form.Item>
                   <span
@@ -266,25 +288,6 @@ function MainLayout({ children }) {
               
             </div>
           </Modal>
-
-          <div className="menu-item">
-            <HomeIcon /> Hub
-          </div>
-          <div className="menu-item">
-            <PersonOutlineIcon /> Assigned to me
-          </div>
-          <Collapse
-            items={items}
-            defaultActiveKey={["0"]}
-            
-            className="plan-list"
-          />
-        </div>
-        {/* <div style={{ height: "580px", borderLeft: "1px solid black" }}></div> */}
-        <div className="content">
-          <Outlet />
-        </div>
-      </div>
     </div>
   );
  }

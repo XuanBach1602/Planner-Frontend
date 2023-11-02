@@ -1,12 +1,24 @@
+/* .task-board-view {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  /* overflow-x: auto;
+  overflow-y: none; */
+ */
+
 .board-container {
   display: flex;
   width: 100%;
-  overflow: auto;
+}
 
+#board-container {
+  display: flex;
+  width: 100%;
 }
 
 .category-box {
   width: 250px;
+  white-space: nowrap;
 }
 
 .board-item {
@@ -31,6 +43,7 @@
   font-size: 20px;
   outline: none; 
   border: none;
+  width: 180px;
 }
 
 .category-input::placeholder {
@@ -43,4 +56,15 @@
     /* outline: none; */
     background-color: white;
     border-bottom-color: #007bff; 
+}
+
+#delete-category-icon {
+  display: none;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+
+.board-item:hover #delete-category-icon {
+  display: inline;
+  color: red;
 }
