@@ -28,10 +28,10 @@ function Plan() {
 
 
   const features = [
-    { id: 1, name: "Grid" },
-    { id: 2, name: "Board" },
-    { id: 3, name: "Charts" },
-    { id: 4, name: "Schedule" },
+    { id: 1, name: "Grid" , value:"Grid"},
+    { id: 2, name: "Board", value:"" },
+    { id: 3, name: "Charts",value: "Charts" },
+    { id: 4, name: "Schedule", value: "Schedule" },
   ];
 
   const handleFeatureClick = (id) => {
@@ -114,7 +114,7 @@ function Plan() {
               className={`feature ${feature.id == activeId ? "active" : ""}`}
               onClick={() => {
                 handleFeatureClick(feature.id);
-                navigate(`/plan/${id}/${feature.name}`);
+                navigate(`/plan/${id}/${feature.value}`);
               }}
             >
               {feature.name}

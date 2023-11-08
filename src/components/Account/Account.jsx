@@ -11,24 +11,26 @@ dayjs.extend(customParseFormat);
 const dateFormat = "YYYY-MM-DD";
 
 const Account = () => {
-  const { user } = useUser();
+  const { user , fetchUserData} = useUser();
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber);
   const [gender, setGender] = useState(user.gender);
-  const [dateOfBirth, setDateOfBirth] = useState("2023-10-10");
-  const [avatar, setAvatar] = useState();
-  const imgUrl = `https://localhost:44302/api/File/avatar/${user.imageUrl}`;
+  const [dateOfBirth, setDateOfBirth] = useState(user.dateOfBirth);
+  const [uploadAvatar, setUploadAvatar] = useState();
+  const [imgUrl, setimgUrl] = useState(`https://localhost:44302/api/File/avatar/${user.imgUrl}`);
   const [image, setImage] = useState(imgUrl);
   const [isValid, setIsValid] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  
 
   const navigate = useNavigate();
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    console.log(file.name)
 
     if (file) {
-      setAvatar(file);
+      setUploadAvatar(file);
       const reader = new FileReader();
 
       reader.onload = () => {
@@ -40,7 +42,7 @@ const Account = () => {
   };
 
   const checkValidInput = () => {
-    var bool = (name !== "") && (email !== "") && (phoneNumber !== "" ) && (dateOfBirth !== "") && (avatar !== null);
+    var bool = (name !== "") && (email !== "") && (phoneNumber !== "" ) && (dateOfBirth !== "") && (uploadAvatar !== null);
     setIsValid(bool);
   }
 
@@ -55,8 +57,8 @@ const Account = () => {
         formData.append("phoneNumber", phoneNumber);
         formData.append("gender", gender);
         formData.append("dateOfBirth", dateOfBirth);
-        if (avatar) {
-          formData.append("file", avatar);
+        if (uploadAvatar) {
+          formData.append("file", uploadAvatar);
         }
         formData.forEach((value, key) => {
           console.log(key, value);
@@ -73,6 +75,7 @@ const Account = () => {
         );
         console.log(res);
         setErrorMessage("");
+        fetchUserData();
         navigate("/")
       } catch (error) {
         console.log(error.message);
@@ -85,14 +88,15 @@ const Account = () => {
 
   const fetchAvatar = async() => {
     try {
-      const token = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ4dWFuYmFjaDE1QGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiMTQ4YjZlMDYtMDM1Ni00ZjU4LWI1NGEtODIzZGQwODQwM2QwIiwianRpIjoiNTIzNDg3NGUtNzM1YS00NDQwLTg0ZDAtMDdhMTM1MTM0ZGRiIiwiZXhwIjoxNjk5MDAwNjM2LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDMwMi8iLCJhdWQiOiJ1c2VyIn0.D1MhjIjdDeyOd6p5bf5-gbciEFIoovX7y2ufrGB7OBE";
+      const token = localStorage.getItem("token");
+      // console.log(token, user);
       const headers = {
         Authorization: `Bearer ${token}`
     };
-      const res =await axios.get(`https://localhost:44302/api/File/avatar/${user.imageUrl}`, {headers,responseType: 'blob'});
+      const res =await axios.get(`https://localhost:44302/api/File?url=${user.imgUrl}`, {headers,responseType: 'blob'});
       console.log(res);
       const blobData = res.data;
-      setAvatar(blobData);
+      setUploadAvatar(blobData);
       const imageUrl = URL.createObjectURL(blobData);
       setImage(imageUrl);
     } catch (error) {
@@ -100,11 +104,11 @@ const Account = () => {
     }
   }
 
-  useEffect(() => fetchAvatar,[]);
+  useEffect(() => fetchAvatar,[imgUrl]);
 
   useEffect(() => {
     checkValidInput();
-  },[name,email,phoneNumber, gender, dateFormat, avatar]);
+  },[name,email,phoneNumber, gender, dateFormat, uploadAvatar]);
   return (
     <div className="account-container">
       <div className="account-form">
@@ -205,7 +209,7 @@ const Account = () => {
             <label htmlFor="fileInput" className="ml-4 btn btn-primary">
               Choose Image
             </label>
-            <span style={{ marginLeft: "10px" }}>{avatar?.name}</span>
+            <span style={{ marginLeft: "10px" }}>{uploadAvatar?.name}</span>
             <div className="preview-avatar-box">
               {image && (
                 <img src={image} alt="Preview" className="img-preview mt-3" />

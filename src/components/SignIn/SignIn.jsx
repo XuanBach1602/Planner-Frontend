@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Navigate, useNavigate } from "react-router-dom";
 import "./SignIn.css";
@@ -27,6 +27,7 @@ const SignIn = () => {
         // console.log(res);
         setIsAuthenticated(true);
         setUser(res.data.userInfo);
+        localStorage.setItem("token", res.data.token);
         // console.log(res.data.userInfo);
         setValidation("");
         navigate("/");
@@ -36,6 +37,26 @@ const SignIn = () => {
       }
     }
   };
+
+  useEffect(() => {
+    const signinAuto = async() => {
+      const data = {
+        email: "xuanbach15@gmail.com",
+        password: "Bach@1602"
+      }
+      const res = await axios.post("https://localhost:44302/auth/SignIn",data);
+      // console.log(res);
+      setIsAuthenticated(true);
+      setUser(res.data.userInfo);
+      localStorage.setItem("user", JSON.stringify(res.data.userInfo));
+      localStorage.setItem("token", res.data.token);
+      console.log(res);
+      navigate("/Plan/58/");
+    };
+   signinAuto();
+  },[]
+    
+  )
   return (
     <div className="signin-page">
       <div className="signin-main">

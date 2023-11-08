@@ -5,7 +5,7 @@ import Task from "../Task/Task";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import TaskView from "../TaskView/TaskView";
 import { useOutletContext } from "react-router-dom";
-const Board = (props) => {
+const Board = () => {
   const [planId] = useOutletContext();
   const [categoryName, setCategoryName] = useState("");
   const [openAddTask, setOpenAddTask] = useState(false);
@@ -14,7 +14,7 @@ const Board = (props) => {
   const [categoryId, setCategoryId] = useState(null);
   const [isTaskUpdate, setIsTaskUpdate] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  
+
   const showAddTask = (categoryId) => {
     setOpenAddTask(true);
     setCategoryId(categoryId);
@@ -22,7 +22,7 @@ const Board = (props) => {
 
   const hideAddTask = () => {
     setOpenAddTask(false);
-    setSelectedTask(null);
+    setSelectedTask([]);
   };
 
   const addNewCategory = async () => {
@@ -101,7 +101,7 @@ const Board = (props) => {
 
   const fetchTaskData = async () => {
     try {
-      const promises = categoryList.map(async (category) => {
+      const promises = categoryList.map(async (category, index) => {
         // console.log("categoryid", category.id);
         const res = await axios.get(
           `https://localhost:44302/api/worktask/GetByCategoryID/${category.id}`
@@ -115,7 +115,7 @@ const Board = (props) => {
         .filter((data) => data !== null)
         .flatMap((data) => data);
       // console.log(filteredTaskResults);
-      
+
       setTaskList(filteredTaskResults);
     } catch (error) {
       console.log(error);
@@ -127,14 +127,18 @@ const Board = (props) => {
   }, []);
 
   useEffect(() => {
-    fetchTaskData();
-    setIsTaskUpdate(false);
+    if (categoryList.length > 0) {
+      fetchTaskData();
+      setIsTaskUpdate(false);
+      setSelectedTask(null);
+    }
   }, [categoryList, isTaskUpdate]);
+
   return (
     <div className="board-container" id="board-container">
       {categoryList !== null &&
-        categoryList.map((category, index) => (
-          <div className="category-box" key={index}>
+        categoryList.map((category) => (
+          <div className="category-box" key={category.id}>
             <div className="board">
               <div className="board-item ">
                 <input
@@ -153,7 +157,10 @@ const Board = (props) => {
             </div>
             <div
               className="add-task-btn"
-              onClick={() => showAddTask(category.id)}
+              onClick={() => {
+                showAddTask(category.id);
+                setSelectedTask(null);
+              }}
             >
               <PlusOutlined
                 style={{
@@ -167,11 +174,19 @@ const Board = (props) => {
             {taskList
               .filter((x) => x.categoryId === category.id)
               .map((task, taskListIndex) => (
-                <div onClick={() => {
-                  setSelectedTask(task);
-                  showAddTask(category.id);
-                }}>
-                  <Task name={task.name} dueDate={task.dueDate} key={taskListIndex} />
+                <div
+                  key={task.modifiedDate}
+                  onClick={() => {
+                    setSelectedTask(task);
+                    showAddTask(category.id);
+                  }}
+                >
+                  <Task
+                    name={task.name}
+                    dueDate={task.dueDate}
+                    // key={`${category.id}-${taskListIndex}`}
+                    key ={task.id}
+                  />
                 </div>
               ))}
           </div>
@@ -202,7 +217,8 @@ const Board = (props) => {
         hideModal={hideAddTask}
         categoryId={categoryId}
         setIsTaskUpdate={setIsTaskUpdate}
-        selectedTask = {selectedTask}
+        selectedTask={selectedTask}
+        // key={selectedTask?.id}
       />
     </div>
   );

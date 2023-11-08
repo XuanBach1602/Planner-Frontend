@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./TaskView.css";
 import axios from "axios";
-import { Dropdown, Modal, Button, Form, Input } from "antd";
+import { Dropdown, Modal, Input } from "antd";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { DatePicker } from "antd";
@@ -16,7 +16,6 @@ const TaskView = (props) => {
   const showModal = props.showModal;
   const hideModal = props.hideModal;
   const setIsTaskUpdate = props.setIsTaskUpdate;
-  const [isAddTask, setIsAddTask] = useState(true);
 
   const [files, setFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -27,8 +26,9 @@ const TaskView = (props) => {
   const [priority, setPriority] = useState("Medium");
   const [startDate, setStartDate] = useState("2023-10-03");
   const [dueDate, setDueDate] = useState("2023-10-03");
-  const [description, setDescription] = useState("Oke e den day di");
+  const [description, setDescription] = useState("Oke ");
   const [isValidInput, setIsValidInput] = useState(false);
+  const [uploadFiles, setUploadFiles] = useState([]);
 
   useEffect(() => {
     if (selectedTask != null) {
@@ -38,11 +38,69 @@ const TaskView = (props) => {
       setPriority(selectedTask?.priority);
       setDueDate(selectedTask?.dueDate);
       setStartDate(selectedTask?.startDate);
+      setFiles([]);
+      setUploadFiles([]);
+      if (selectedTask.files != null && selectedTask.files.length > 0) {
+        const filePromises = selectedTask.files.map(async (file) => {
+          try {
+            const response = await axios.get(
+              `https://localhost:44302/api/File?url=${file.url}`,
+              {
+                responseType: "blob", // Chỉ định kiểu dữ liệu nhận về là dạng blob (binary large object)
+              }
+            );
+            const blobData = response.data;
+            setUploadFiles((prevUploadFiles) => [
+              ...prevUploadFiles,
+              createAndSetFileName(blobData, file.name)
+            ]);
+      
+            const url = window.URL.createObjectURL(new Blob([blobData]));
+            return { name: file.name, url: url };
+          } catch (error) {
+            console.error(error);
+            return null;
+          }
+        });
+      
+        Promise.all(filePromises)
+          .then((Files) => {
+            const filteredFiles = Files.filter((file) => file !== null);
+            setFiles(filteredFiles);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
     }
+  else {
+    clearData();
+  }
+   
   }, [selectedTask]);
 
   const handleProgressChange = (value) => {
     setProgress(value);
+  };
+
+  const createAndSetFileName = (blobData, fileName) => {
+    const blob = new Blob([blobData],{type:"application/octet-stream"});
+    const file = new File([blob],fileName);
+    return file;
+  }
+
+  const clearData = () => {
+    setTaskName("Dang thu");
+    setDescription("oke");
+    setProgress("In progress");
+    setPriority("Medium");
+    setDueDate("2023-10-03");
+    setStartDate("2023-10-03");
+    setFiles([]);
+    setUploadFiles([]);
+    setIsValidInput(false);
+    setErrorMessage("");
+    // set
   };
 
   const handlePriorityChange = (value) => {
@@ -58,17 +116,20 @@ const TaskView = (props) => {
 
   const addFile = (e) => {
     const newFile = e.target.files[0];
-    const fileDoesNotExist = files.every((file) => file.name !== newFile.name);
-    if (fileDoesNotExist) {
-      setFiles([...files, newFile]);
-      console.log("Add file");
-    }
+      const url = window.URL.createObjectURL(newFile);
+
+      setFiles([...files, { name: newFile.name, url: url }]);
+      console.log("newFile:", newFile);
+      setUploadFiles([...uploadFiles,newFile]);
+      console.log(uploadFiles);
+    // }
   };
 
   const removeFile = (fileName) => {
     const updatedFiles = files.filter((file) => file.name !== fileName);
+    const updatedUploadFiles = uploadFiles.filter((file) => file.name !== fileName);
     setFiles(updatedFiles);
-    console.log("remove file");
+    setUploadFiles(updatedUploadFiles);
   };
 
   const dateFormat = "YYYY-MM-DD";
@@ -76,27 +137,37 @@ const TaskView = (props) => {
   const addNewTask = async () => {
     if (isValidInput) {
       try {
-        const data = {
-          name: taskName,
-          description: description,
-          status: progress,
-          priority: priority,
-          startDate: startDate,
-          dueDate: dueDate,
-          categoryID: categoryId,
-          createdUserID: user.id,
-          assignedUserID: user.id,
-        };
+        const formData = new FormData();
+        formData.append("name", taskName);
+        formData.append("description", description);
+        formData.append("status", progress);
+        formData.append("priority", priority);
+        formData.append("startDate", startDate);
+        formData.append("dueDate", dueDate);
+        formData.append("categoryID", categoryId);
+        formData.append("createdUserID", user.id);
+        formData.append("assignedUserID", user.id);
+        if (uploadFiles && uploadFiles.length > 0) {
+          for (let i = 0; i < uploadFiles.length; i++) {
+            formData.append("attachedFiles", uploadFiles[i]);
+          }
+        }
 
-        console.log(data);
+        // console.log(data);
         const res = await axios.post(
           "https://localhost:44302/api/worktask",
-          data
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
         console.log(res);
         setErrorMessage("");
         setIsTaskUpdate(true);
         hideModal();
+        // clearData();
       } catch (error) {
         console.log(error);
         setErrorMessage("Refill the form");
@@ -108,30 +179,40 @@ const TaskView = (props) => {
   };
 
   const updateTask = async () => {
-    console.log(selectedTask);
+    // console.log(selectedTask);
     if (isValidInput) {
       try {
-        const data = {
-          id: selectedTask.id,
-          name: taskName,
-          description: description,
-          status: progress,
-          priority: priority,
-          startDate: startDate,
-          dueDate: dueDate,
-          categoryID: selectedTask.categoryId,
-          createdUserID: user.id,
-          assignedUserID: user.id,
-        };
+        const formData = new FormData();
+        formData.append("id", selectedTask.id);
+        formData.append("name", taskName);
+        formData.append("description", description);
+        formData.append("status", progress);
+        formData.append("priority", priority);
+        formData.append("startDate", startDate);
+        formData.append("dueDate", dueDate);
+        formData.append("categoryID", selectedTask.categoryId);
+        formData.append("createdUserID", user.id);
+        formData.append("assignedUserID", user.id);
+        if (uploadFiles && uploadFiles.length > 0) {
+          for (let i = 0; i < uploadFiles.length; i++) {
+            formData.append("attachedFiles", uploadFiles[i]);
+          }
+        }
 
-        console.log(data);
+        // console.log(data);
         const res = await axios.put(
           "https://localhost:44302/api/worktask",
-          data
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
         console.log(res);
         setErrorMessage("");
         setIsTaskUpdate(true);
+
         hideModal();
       } catch (error) {
         console.log(error);
@@ -328,9 +409,11 @@ const TaskView = (props) => {
         <div>
           {files !== null &&
             files.map((file, index) => (
-              <div className="" key={index}>
-                <li>
+              <div className=""key={index}>
+                <li >
+                  <a href= {file.url} target="_blank" download={file.name} key={index}  >
                   {file.name} &nbsp;
+                  </a>
                   <DeleteOutlined
                     id="delete-file-icon"
                     onClick={() => removeFile(file.name)}

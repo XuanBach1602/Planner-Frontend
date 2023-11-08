@@ -6,28 +6,6 @@ import moment from "moment/moment";
 import { useOutletContext } from "react-router-dom";
 import axios from "axios";
 
-const taskList = [
-  {
-    id: 1,
-    name: "Task 1",
-    dueDate: "2023-10-10",
-  },
-  {
-    id: 2,
-    name: "Task 2",
-    dueDate: "2023-10-09",
-  },
-  {
-    id: 3,
-    name: "Task 3",
-    dueDate: "2023-10-20",
-  },
-  {
-    id: 4,
-    name: "Task 4",
-    dueDate: "2023-12-12",
-  },
-];
 
 const Schedule = () => {
   const [planId] = useOutletContext();
@@ -40,7 +18,7 @@ const Schedule = () => {
   const now = moment();
   const showAddTask = () => {
     setOpenAddTask(true);
-    console.log(openAddTask);
+    // console.log(openAddTask);
   };
 
   const hideAddTask = () => {
@@ -62,7 +40,7 @@ const Schedule = () => {
         `https://localhost:44302/api/Category/GetByPlanID/${planId}`
       );
       setCategoryList(res.data);
-      console.log(res.data);
+      // console.log(res.data);
     } catch (error) {
       console.log("category", error);
     }
@@ -70,22 +48,24 @@ const Schedule = () => {
 
   const fetchTaskData = async () => {
     try {
-      const promises = categoryList.map(async (category) => {
-        // console.log("categoryid", category.id);
-        const res = await axios.get(
-          `https://localhost:44302/api/worktask/GetByCategoryID/${category.id}`
-        );
-        // console.log(res.data);
-        return res.data;
-      });
-
-      const taskResults = await Promise.all(promises);
-      const filteredTaskResults = taskResults
-        .filter((data) => data !== null)
-        .flatMap((data) => data);
-      // console.log(filteredTaskResults);
-
-      setTaskList(filteredTaskResults);
+      if(categoryList != null){
+        const promises = categoryList.map(async (category) => {
+          // console.log("categoryid", category.id);
+          const res = await axios.get(
+            `https://localhost:44302/api/worktask/GetByCategoryID/${category.id}`
+          );
+          // console.log(res.data);
+          return res.data;
+        });
+  
+        const taskResults = await Promise.all(promises);
+        const filteredTaskResults = taskResults
+          .filter((data) => data !== null)
+          .flatMap((data) => data);
+        // console.log(filteredTaskResults);
+  
+        setTaskList(filteredTaskResults);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -94,7 +74,7 @@ const Schedule = () => {
   const dateCellRender = (value) => {
     const currentDate = value.format("YYYY-MM-DD");
     const tasksForDate = taskList.filter(
-      (task) => task.dueDate === currentDate || task.startDate === currentDate
+      (task) => task.dueDate >= currentDate && task.startDate <= currentDate
     );
 
     return (
@@ -116,10 +96,10 @@ const Schedule = () => {
           const classNames = ["event"];
 
           if (isStartDate) {
-            classNames.push("startDate");
+            classNames.push("startDateBadge");
           }
           if (isEndDate) {
-            classNames.push("dueDate");
+            classNames.push("dueDateBadge");
           }
 
           return (

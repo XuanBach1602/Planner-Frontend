@@ -22,10 +22,10 @@
     margin: 20px;
   }
 
-  .startDate {
+  .startDateBadge {
     color: aqua !important  ;
   }
 
-  .endDate {
+  .endDateBadge {
     color: red;
   }

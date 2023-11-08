@@ -24,7 +24,7 @@ function MainLayout({ children }) {
   const [planList, setPlanList] = useState([]);
   const [isPlanUpdate, setIsPlanUpdate] = useState(false);
   const {user, setUser, setIsAuthenticated} = useUser();
-  const avatarUrl = `https://localhost:44302/api/File/${user.imgUrl}`;
+  const [image, setImage] = useState();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -77,6 +77,25 @@ function MainLayout({ children }) {
       setValidationMessage("Please fill in form");
     }
   };
+
+  useEffect(() => {
+    const fetchAvatar = async() => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = {
+          Authorization: `Bearer ${token}`
+      };
+        const res = await axios.get(`https://localhost:44302/api/File?url=${user.imgUrl}`, {headers,responseType: 'blob'});
+        const blobData = res.data;
+        const imageUrl = URL.createObjectURL(blobData);
+        setImage(imageUrl);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
+    fetchAvatar();
+  },[])
   
 
   const fetchPlanData = async () => {
@@ -145,8 +164,8 @@ function MainLayout({ children }) {
                 aria-expanded="false"
                 style={{ backgroundColor: "none" }}
               >
-                <img
-                  // src= {avatarUrl}
+                {image && <img
+                  src={image}
                   alt="avatar"
                   srcSet=""
                   style={{
@@ -154,7 +173,7 @@ function MainLayout({ children }) {
                     height: "30px",
                     borderRadius: "100%",
                   }}
-                />
+                />}
               </div>
               <ul
                 className="dropdown-menu"
@@ -162,7 +181,7 @@ function MainLayout({ children }) {
               >
                 <li style={{ marginLeft: "15px" }}>{user.name}</li>
                 <li>
-                  <a className="dropdown-item" href="/account">
+                  <a className="dropdown-item" onClick={() => navigate("/account")}>
                     Account infomation
                   </a>
                 </li>

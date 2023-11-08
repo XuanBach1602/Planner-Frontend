@@ -36,7 +36,7 @@ function App() {
             <Route path="/" element={<MainLayout />}>
               <Route path="/" element={<Hub />} />
               <Route path="/plan/:id" element={<Plan />}>
-                <Route path="board" element={<Board />} />
+                <Route path="" index element={<Board />} />
                 <Route path="schedule" element={<Schedule />} />
               </Route>
             </Route>
