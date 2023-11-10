@@ -30,8 +30,7 @@ function Plan() {
   const features = [
     { id: 1, name: "Grid" , value:"Grid"},
     { id: 2, name: "Board", value:"" },
-    { id: 3, name: "Charts",value: "Charts" },
-    { id: 4, name: "Schedule", value: "Schedule" },
+    { id: 3, name: "Schedule", value: "Schedule" },
   ];
 
   const handleFeatureClick = (id) => {
@@ -77,6 +76,60 @@ function Plan() {
       }
     }
   };
+
+
+  //Dang test
+  const [categoryList, setCategoryList] = useState([]);
+  const [taskList, setTaskList] = useState([]);
+  const [isTaskUpdate, setIsTaskUpdate] = useState(false);
+  const fetchCategoryData = async () => {
+    try {
+      const res = await axios.get(
+        `https://localhost:44302/api/Category/GetByPlanID/${id}`
+      );
+      setCategoryList(res.data);
+      // console.log(res.data);
+    } catch (error) {
+      console.log("category", error);
+    }
+  };
+
+  const fetchTaskData = async () => {
+    try {
+      const promises = categoryList.map(async (category, index) => {
+        // console.log("categoryid", category.id);
+        const res = await axios.get(
+          `https://localhost:44302/api/worktask/GetByCategoryID/${category.id}`
+        );
+        // console.log(res.data);
+        return res.data;
+      });
+
+      const taskResults = await Promise.all(promises);
+      const filteredTaskResults = taskResults
+        .filter((data) => data !== null)
+        .flatMap((data) => data);
+      // console.log(filteredTaskResults);
+
+      setTaskList(filteredTaskResults);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategoryData();
+  }, [id]);
+
+  useEffect(() => {
+    if (categoryList.length > 0) {
+      fetchTaskData();
+      setIsTaskUpdate(false);
+    }
+  }, [categoryList, isTaskUpdate]);
+
+
+
 
   const setPlanInput = (e) => {
     if (e.key === "Enter") {
@@ -151,7 +204,7 @@ function Plan() {
       <hr style={{ margin: 0 }} />
       <div className="switch-page">
         {/* <Board /> */}
-        <Outlet context={[id]} />
+        <Outlet context={[id,categoryList,taskList, fetchCategoryData, fetchTaskData]} />
       </div>
     </div>
   );

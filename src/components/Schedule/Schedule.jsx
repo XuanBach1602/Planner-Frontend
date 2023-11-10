@@ -127,12 +127,14 @@ const Schedule = () => {
   return (
     <>
       <Calendar className="calendar-table" cellRender={cellRender}></Calendar>
+      {openAddTask && 
       <TaskView
-        showModal={openAddTask}
-        hideModal={hideAddTask}
-        setIsTaskUpdate={setIsTaskUpdate}
-        selectedTask={selectedTask}
-      />
+      showModal={openAddTask}
+      hideModal={hideAddTask}
+      setIsTaskUpdate={setIsTaskUpdate}
+      selectedTask={selectedTask}
+      planId={planId}
+    />}
     </>
   );
 };

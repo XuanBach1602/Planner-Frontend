@@ -1,0 +1,27 @@
+
+.plan-item-statistical {
+    border:solid 0.5px gray ;
+    padding: 20px;
+    width: 450px;
+    height: 300px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.plan-list-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.hub-container {
+    
+    margin: 20px;
+}
+
+.plan-avatar-hub {
+    padding: 16px;
+    width: 52px;
+    height: 52px;
+    background-color: rgb(203, 32, 198);
+    margin-right: 10px;
+}

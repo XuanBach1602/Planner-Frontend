@@ -23,7 +23,7 @@ function MainLayout({ children }) {
   const [isValidInput, setIsValidInput] = useState(false);
   const [planList, setPlanList] = useState([]);
   const [isPlanUpdate, setIsPlanUpdate] = useState(false);
-  const {user, setUser, setIsAuthenticated} = useUser();
+  const { user, setUser, setIsAuthenticated } = useUser();
   const [image, setImage] = useState();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -35,6 +35,7 @@ function MainLayout({ children }) {
 
   const checkValidInput = () => {
     var bool = planName !== "";
+    console.log(bool);
     setIsValidInput(bool);
   };
 
@@ -42,33 +43,27 @@ function MainLayout({ children }) {
     setIsAuthenticated(false);
     setUser(null);
     navigate("/signin");
-  }
+  };
 
   useEffect(() => checkValidInput(), [planName]);
-  // useEffect(()=>{
-  //   document.getElementById("planName").value = "";
-  // },[planName])
 
-  const addNewPlan = async (e) => {
-    e.preventDefault();
+  const addNewPlan = async () => {
     // console.log(planName, privacy);
     var createUserID = user.id;
     if (isValidInput) {
       const data = {
         name: planName,
         isPrivacy: privacy,
-        createdUserID:createUserID
+        createdUserID: createUserID,
       };
       try {
         const res = await axios.post("https://localhost:44302/api/plan", data);
         console.log(res);
         setValidationMessage("");
         setPrivacy(true);
-        // document.querySelector("planName-input").target.value = "";
+        // document.querySelector("planName-input").placeholder.value = "";
         setIsPlanUpdate(true);
         setOpen(false);
-        
-        
       } catch (error) {
         console.log(error);
         setValidationMessage("Please refill in form");
@@ -79,37 +74,38 @@ function MainLayout({ children }) {
   };
 
   useEffect(() => {
-    const fetchAvatar = async() => {
+    const fetchAvatar = async () => {
       try {
         const token = localStorage.getItem("token");
         const headers = {
-          Authorization: `Bearer ${token}`
-      };
-        const res = await axios.get(`https://localhost:44302/api/File?url=${user.imgUrl}`, {headers,responseType: 'blob'});
+          Authorization: `Bearer ${token}`,
+        };
+        const res = await axios.get(
+          `https://localhost:44302/api/File?url=${user.imgUrl}`,
+          { headers, responseType: "blob" }
+        );
         const blobData = res.data;
         const imageUrl = URL.createObjectURL(blobData);
         setImage(imageUrl);
       } catch (error) {
         console.log(error.message);
       }
-    }
+    };
 
     fetchAvatar();
-  },[])
-  
+  }, []);
 
   const fetchPlanData = async () => {
     try {
-      const res = await axios.get(`https://localhost:44302/api/plan/GetByUserID/${user.id}`);
+      const res = await axios.get(
+        `https://localhost:44302/api/plan/GetByUserID/${user.id}`
+      );
       // console.log(res);
       setPlanList(res.data);
     } catch (error) {
       console.log(error);
     }
-  }
-
-
-
+  };
 
   const text = `
   A dog is a type of domesticated animal.
@@ -120,16 +116,22 @@ function MainLayout({ children }) {
     {
       key: "1",
       label: "Pinned",
-      children: <div className="" >
-        {planList.map((plan,index) =>(
-          <div className="plan-box" onClick={() => navigate(`/plan/${plan.id}`)} key={index}>
-          <div className="plan-img" style={{backgroundColor: "#CB20C6"}}>{plan.name[0]}</div>
-          {plan.name}
-          </div>
-          
-        ))}
-        
-      </div>
+      children: (
+        <div className="">
+          {planList.map((plan, index) => (
+            <div
+              className="plan-box"
+              onClick={() => navigate(`/plan/${plan.id}`)}
+              key={index}
+            >
+              <div className="plan-img" style={{ backgroundColor: "#CB20C6" }}>
+                {plan.name[0]}
+              </div>
+              {plan.name}
+            </div>
+          ))}
+        </div>
+      ),
     },
     {
       key: "2",
@@ -138,12 +140,10 @@ function MainLayout({ children }) {
     },
   ];
 
- 
-
-  useEffect(() =>{
+  useEffect(() => {
     fetchPlanData();
     setIsPlanUpdate(false);
-  },[isPlanUpdate])
+  }, [isPlanUpdate]);
 
   return (
     <div className="main" style={{ width: "100%", height: "100%" }}>
@@ -164,16 +164,18 @@ function MainLayout({ children }) {
                 aria-expanded="false"
                 style={{ backgroundColor: "none" }}
               >
-                {image && <img
-                  src={image}
-                  alt="avatar"
-                  srcSet=""
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    borderRadius: "100%",
-                  }}
-                />}
+                {image && (
+                  <img
+                    src={image}
+                    alt="avatar"
+                    srcSet=""
+                    style={{
+                      width: "30px",
+                      height: "30px",
+                      borderRadius: "100%",
+                    }}
+                  />
+                )}
               </div>
               <ul
                 className="dropdown-menu"
@@ -181,7 +183,10 @@ function MainLayout({ children }) {
               >
                 <li style={{ marginLeft: "15px" }}>{user.name}</li>
                 <li>
-                  <a className="dropdown-item" onClick={() => navigate("/account")}>
+                  <a
+                    className="dropdown-item"
+                    onClick={() => navigate("/account")}
+                  >
                     Account infomation
                   </a>
                 </li>
@@ -191,7 +196,7 @@ function MainLayout({ children }) {
                   </a>
                 </li>
                 <li>
-                  <a className="dropdown-item" onClick={() => signOut()} >
+                  <a className="dropdown-item" onClick={() => signOut()}>
                     Sign Out
                   </a>
                 </li>
@@ -211,7 +216,7 @@ function MainLayout({ children }) {
             <AddIcon /> New plan
           </div>
 
-          <div className="menu-item">
+          <div className="menu-item" onClick={() => navigate("/")}>
             <HomeIcon /> Hub
           </div>
           <div className="menu-item">
@@ -220,95 +225,94 @@ function MainLayout({ children }) {
           <Collapse
             items={items}
             defaultActiveKey={["0"]}
-            
             className="plan-list"
           />
         </div>
         {/* <div style={{ height: "580px", borderLeft: "1px solid black" }}></div> */}
         <div className="content">
-          <Outlet context={[setIsPlanUpdate]}/>
+          <Outlet context={[setIsPlanUpdate]} />
         </div>
       </div>
 
-
-       {/* Modal */}
-       <Modal
-            title="New plan"
-            centered
-            open={open}
-            onOk={(e) => {
-              setPLanName("");
-              addNewPlan(e);
-            }}
-            onCancel={() => {
-              setPLanName("");
-              setOpen(false);
-            }}
-            width={1100}
-            height={600}
-            style={{}}
-          >
-            <div style={{ display: "flex" }}>
-              <img
-                src="https://res.cdn.office.net/planner/files/plex_prod_20230925.001/create-new-illustration.svg"
-                alt=""
-              />
-              <div className="plan-container">
-                <h1>Name your plan</h1>
-                <Form>
-                  <Form.Item
-                    name="planName"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please fill your plan name!",
-                      },
-                    ]}
-                  >
-                    <Input className="planName-input"
-                      placeholder="Fill your plan name"
-                      onChange={(e) => setPLanName(e.target.value)}
-                      onBlur={(e) => e.target.value = ""}
-                    />
-                  </Form.Item>
-                  <span
+      {/* Modal */}
+      {open && (
+        <Modal
+          title="New plan"
+          centered
+          open={open}
+          onOk={(e) => {
+            setPLanName("");
+            addNewPlan(e);
+          }}
+          onCancel={() => {
+            setPLanName("");
+            setOpen(false);
+          }}
+          width={1100}
+          height={600}
+          style={{}}
+        >
+          <div style={{ display: "flex" }}>
+            <img
+              src="https://res.cdn.office.net/planner/files/plex_prod_20230925.001/create-new-illustration.svg"
+              alt=""
+            />
+            <div className="plan-container">
+              <h1>Name your plan</h1>
+              <Form>
+                <Form.Item
+                  name="planName"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please fill your plan name!",
+                    },
+                  ]}
+                >
+                  <Input
+                    className="planName-input"
+                    placeholder="Fill your plan name"
+                    onChange={(e) => setPLanName(e.target.value)}
+                    onBlur={(e) => (e.target.value = "")}
+                  />
+                </Form.Item>
+                <span
                   className="validation-add-plan"
                   style={{ color: "#FF0F00" }}
                 >
                   {validationMessage}
                 </span>
-                </Form>
-                
-                <Select
-                  defaultValue="Private"
-                  style={{
-                    marginTop: 30,
-                    width: 200,
-                  }}
-                  onChange={(value) => setPrivacy(value)}
-                  options={[
-                    {
-                      label: "Privacy",
-                      options: [
-                        {
-                          label: "Private",
-                          value: false,
-                        },
-                        {
-                          label: "Public",
-                          value: true,
-                        },
-                      ],
-                    },
-                  ]}
-                />
-                
-              </div>
-              
+              </Form>
+
+              <Select
+                defaultValue="Private"
+                style={{
+                  marginTop: 30,
+                  width: 200,
+                }}
+                onChange={(value) => setPrivacy(value)}
+                options={[
+                  {
+                    label: "Privacy",
+                    options: [
+                      {
+                        label: "Private",
+                        value: false,
+                      },
+                      {
+                        label: "Public",
+                        value: true,
+                      },
+                    ],
+                  },
+                ]}
+              />
             </div>
-          </Modal>
+          </div>
+        </Modal>
+      )}
     </div>
   );
- }
+}
 
 export default MainLayout;

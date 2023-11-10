@@ -8,7 +8,7 @@ import {
 import { Navigate } from "react-router-dom";
 import "./App.css";
 import MainLayout from "./layouts/layout";
-import Hub from "./components/Hub/Hub";
+import Hub from "./components/Hub/Hub.jsx";
 import Plan from "./components/Plan/Plan.jsx";
 import SignUp from "./components/SignUp/SignUp.jsx";
 import SignIn from "./components/SignIn/SignIn";
@@ -17,6 +17,7 @@ import TaskView from "./components/TaskView/TaskView";
 import Schedule from "./components/Schedule/Schedule";
 import Account from "./components/Account/Account";
 import { useUser } from "./UserContext";
+import Grid from "./components/Grid/Grid.jsx";
 
 function App() {
   const { isAuthenticated, setIsAuthenticated } = useUser();
@@ -38,6 +39,7 @@ function App() {
               <Route path="/plan/:id" element={<Plan />}>
                 <Route path="" index element={<Board />} />
                 <Route path="schedule" element={<Schedule />} />
+                <Route path="grid" element={<Grid />} />
               </Route>
             </Route>
           </Route>

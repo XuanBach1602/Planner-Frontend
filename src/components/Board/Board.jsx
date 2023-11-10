@@ -6,11 +6,11 @@ import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import TaskView from "../TaskView/TaskView";
 import { useOutletContext } from "react-router-dom";
 const Board = () => {
-  const [planId] = useOutletContext();
+  const [planId,categoryList,taskList, fetchCategoryData, fetchTaskData] = useOutletContext();
   const [categoryName, setCategoryName] = useState("");
   const [openAddTask, setOpenAddTask] = useState(false);
-  const [categoryList, setCategoryList] = useState([]);
-  const [taskList, setTaskList] = useState([]);
+  // const [categoryList, setCategoryList] = useState([]);
+  // const [taskList, setTaskList] = useState([]);
   const [categoryId, setCategoryId] = useState(null);
   const [isTaskUpdate, setIsTaskUpdate] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -77,17 +77,17 @@ const Board = () => {
     }
   };
 
-  const fetchCategoryData = async () => {
-    try {
-      const res = await axios.get(
-        `https://localhost:44302/api/Category/GetByPlanID/${planId}`
-      );
-      setCategoryList(res.data);
-      // console.log(res.data);
-    } catch (error) {
-      console.log("category", error);
-    }
-  };
+  // const fetchCategoryData = async () => {
+  //   try {
+  //     const res = await axios.get(
+  //       `https://localhost:44302/api/Category/GetByPlanID/${planId}`
+  //     );
+  //     setCategoryList(res.data);
+  //     // console.log(res.data);
+  //   } catch (error) {
+  //     console.log("category", error);
+  //   }
+  // };
 
   const setCategoryInput = (e, categoryId) => {
     if (e.key === "Enter") {
@@ -99,40 +99,40 @@ const Board = () => {
     }
   };
 
-  const fetchTaskData = async () => {
-    try {
-      const promises = categoryList.map(async (category, index) => {
-        // console.log("categoryid", category.id);
-        const res = await axios.get(
-          `https://localhost:44302/api/worktask/GetByCategoryID/${category.id}`
-        );
-        // console.log(res.data);
-        return res.data;
-      });
+  // const fetchTaskData = async () => {
+  //   try {
+  //     const promises = categoryList.map(async (category, index) => {
+  //       // console.log("categoryid", category.id);
+  //       const res = await axios.get(
+  //         `https://localhost:44302/api/worktask/GetByCategoryID/${category.id}`
+  //       );
+  //       // console.log(res.data);
+  //       return res.data;
+  //     });
 
-      const taskResults = await Promise.all(promises);
-      const filteredTaskResults = taskResults
-        .filter((data) => data !== null)
-        .flatMap((data) => data);
-      // console.log(filteredTaskResults);
+  //     const taskResults = await Promise.all(promises);
+  //     const filteredTaskResults = taskResults
+  //       .filter((data) => data !== null)
+  //       .flatMap((data) => data);
+  //     // console.log(filteredTaskResults);
 
-      setTaskList(filteredTaskResults);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //     setTaskList(filteredTaskResults);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchCategoryData();
-  }, []);
+  // useEffect(() => {
+  //   fetchCategoryData();
+  // }, [planId]);
 
-  useEffect(() => {
-    if (categoryList.length > 0) {
-      fetchTaskData();
-      setIsTaskUpdate(false);
-      setSelectedTask(null);
-    }
-  }, [categoryList, isTaskUpdate]);
+  // useEffect(() => {
+  //   if (categoryList.length > 0) {
+  //     fetchTaskData();
+  //     setIsTaskUpdate(false);
+  //     setSelectedTask(null);
+  //   }
+  // }, [categoryList, isTaskUpdate]);
 
   return (
     <div className="board-container" id="board-container">
@@ -185,7 +185,7 @@ const Board = () => {
                     name={task.name}
                     dueDate={task.dueDate}
                     // key={`${category.id}-${taskListIndex}`}
-                    key ={task.id}
+                    key={task.id}
                   />
                 </div>
               ))}
@@ -212,14 +212,17 @@ const Board = () => {
           </div>
         </div>
       </div>
-      <TaskView
-        showModal={openAddTask}
-        hideModal={hideAddTask}
-        categoryId={categoryId}
-        setIsTaskUpdate={setIsTaskUpdate}
-        selectedTask={selectedTask}
-        // key={selectedTask?.id}
-      />
+      {openAddTask && (
+        <TaskView
+          showModal={openAddTask}
+          hideModal={hideAddTask}
+          categoryId={categoryId}
+          // setIsTaskUpdate={setIsTaskUpdate}
+          selectedTask={selectedTask}
+          planId={planId}
+          fetchTaskData = {fetchTaskData}
+        />
+      )}
     </div>
   );
 };

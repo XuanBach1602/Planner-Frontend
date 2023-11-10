@@ -11,24 +11,42 @@ import { useUser } from "../../UserContext";
 dayjs.extend(customParseFormat);
 
 const TaskView = (props) => {
+  const { user } = useUser();
+  const { TextArea } = Input;
   const selectedTask = props.selectedTask;
   const categoryId = props.categoryId;
   const showModal = props.showModal;
   const hideModal = props.hideModal;
   const setIsTaskUpdate = props.setIsTaskUpdate;
+  const fetchTaskData = props.fetchTaskData;
+  const planId = props.planId;
 
   const [files, setFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const { TextArea } = Input;
-  const { user } = useUser();
-  const [taskName, setTaskName] = useState("Dang thu");
-  const [progress, setProgress] = useState("In progress");
-  const [priority, setPriority] = useState("Medium");
-  const [startDate, setStartDate] = useState("2023-10-03");
-  const [dueDate, setDueDate] = useState("2023-10-03");
-  const [description, setDescription] = useState("Oke ");
   const [isValidInput, setIsValidInput] = useState(false);
   const [uploadFiles, setUploadFiles] = useState([]);
+  const defaultTask = {
+    taskName: "Dang thu",
+    progress: "In progress",
+    priority: "Medium",
+    startDate: "2023-11-03",
+    dueDate: "2023-11-03",
+    description: "Đây là test task",
+  };
+
+  const setTaskName = (value) =>
+    setTask((prevTask) => ({ ...prevTask, taskName: value }));
+  const setProgress = (value) =>
+    setTask((prevTask) => ({ ...prevTask, progress: value }));
+  const setPriority = (value) =>
+    setTask((prevTask) => ({ ...prevTask, priority: value }));
+  const setStartDate = (value) =>
+    setTask((prevTask) => ({ ...prevTask, startDate: value }));
+  const setDueDate = (value) =>
+    setTask((prevTask) => ({ ...prevTask, dueDate: value }));
+  const setDescription = (value) =>
+    setTask((prevTask) => ({ ...prevTask, description: value }));
+  const [task, setTask] = useState(defaultTask);
 
   useEffect(() => {
     if (selectedTask != null) {
@@ -52,9 +70,9 @@ const TaskView = (props) => {
             const blobData = response.data;
             setUploadFiles((prevUploadFiles) => [
               ...prevUploadFiles,
-              createAndSetFileName(blobData, file.name)
+              createAndSetFileName(blobData, file.name),
             ]);
-      
+
             const url = window.URL.createObjectURL(new Blob([blobData]));
             return { name: file.name, url: url };
           } catch (error) {
@@ -62,7 +80,7 @@ const TaskView = (props) => {
             return null;
           }
         });
-      
+
         Promise.all(filePromises)
           .then((Files) => {
             const filteredFiles = Files.filter((file) => file !== null);
@@ -72,11 +90,9 @@ const TaskView = (props) => {
             console.error(error);
           });
       }
+    } else {
+      // clearData();
     }
-  else {
-    clearData();
-  }
-   
   }, [selectedTask]);
 
   const handleProgressChange = (value) => {
@@ -84,23 +100,9 @@ const TaskView = (props) => {
   };
 
   const createAndSetFileName = (blobData, fileName) => {
-    const blob = new Blob([blobData],{type:"application/octet-stream"});
-    const file = new File([blob],fileName);
+    const blob = new Blob([blobData], { type: "application/octet-stream" });
+    const file = new File([blob], fileName);
     return file;
-  }
-
-  const clearData = () => {
-    setTaskName("Dang thu");
-    setDescription("oke");
-    setProgress("In progress");
-    setPriority("Medium");
-    setDueDate("2023-10-03");
-    setStartDate("2023-10-03");
-    setFiles([]);
-    setUploadFiles([]);
-    setIsValidInput(false);
-    setErrorMessage("");
-    // set
   };
 
   const handlePriorityChange = (value) => {
@@ -109,25 +111,27 @@ const TaskView = (props) => {
 
   const checkValid = () => {
     // var isValid = taskName.trim() !== "";
-    var isValid = taskName !== "";
+    var isValid = task.taskName !== "";
 
     setIsValidInput(isValid);
   };
 
   const addFile = (e) => {
     const newFile = e.target.files[0];
-      const url = window.URL.createObjectURL(newFile);
+    const url = window.URL.createObjectURL(newFile);
 
-      setFiles([...files, { name: newFile.name, url: url }]);
-      console.log("newFile:", newFile);
-      setUploadFiles([...uploadFiles,newFile]);
-      console.log(uploadFiles);
+    setFiles([...files, { name: newFile.name, url: url }]);
+    console.log("newFile:", newFile);
+    setUploadFiles([...uploadFiles, newFile]);
+    console.log(uploadFiles);
     // }
   };
 
   const removeFile = (fileName) => {
     const updatedFiles = files.filter((file) => file.name !== fileName);
-    const updatedUploadFiles = uploadFiles.filter((file) => file.name !== fileName);
+    const updatedUploadFiles = uploadFiles.filter(
+      (file) => file.name !== fileName
+    );
     setFiles(updatedFiles);
     setUploadFiles(updatedUploadFiles);
   };
@@ -138,13 +142,14 @@ const TaskView = (props) => {
     if (isValidInput) {
       try {
         const formData = new FormData();
-        formData.append("name", taskName);
-        formData.append("description", description);
-        formData.append("status", progress);
-        formData.append("priority", priority);
-        formData.append("startDate", startDate);
-        formData.append("dueDate", dueDate);
+        formData.append("name", task.taskName);
+        formData.append("description", task.description);
+        formData.append("status", task.progress);
+        formData.append("priority", task.priority);
+        formData.append("startDate", task.startDate);
+        formData.append("dueDate", task.dueDate);
         formData.append("categoryID", categoryId);
+        formData.append("planID", planId);
         formData.append("createdUserID", user.id);
         formData.append("assignedUserID", user.id);
         if (uploadFiles && uploadFiles.length > 0) {
@@ -165,7 +170,8 @@ const TaskView = (props) => {
         );
         console.log(res);
         setErrorMessage("");
-        setIsTaskUpdate(true);
+        // setIsTaskUpdate(true);
+        fetchTaskData();
         hideModal();
         // clearData();
       } catch (error) {
@@ -179,18 +185,19 @@ const TaskView = (props) => {
   };
 
   const updateTask = async () => {
-    // console.log(selectedTask);
+    console.log(selectedTask);
     if (isValidInput) {
       try {
         const formData = new FormData();
         formData.append("id", selectedTask.id);
-        formData.append("name", taskName);
-        formData.append("description", description);
-        formData.append("status", progress);
-        formData.append("priority", priority);
-        formData.append("startDate", startDate);
-        formData.append("dueDate", dueDate);
+        formData.append("name", task.taskName);
+        formData.append("description", task.description);
+        formData.append("status", task.progress);
+        formData.append("priority", task.priority);
+        formData.append("startDate", task.startDate);
+        formData.append("dueDate", task.dueDate);
         formData.append("categoryID", selectedTask.categoryId);
+        formData.append("planID", planId);
         formData.append("createdUserID", user.id);
         formData.append("assignedUserID", user.id);
         if (uploadFiles && uploadFiles.length > 0) {
@@ -211,7 +218,8 @@ const TaskView = (props) => {
         );
         console.log(res);
         setErrorMessage("");
-        setIsTaskUpdate(true);
+        fetchTaskData();
+        // setIsTaskUpdate(true);
 
         hideModal();
       } catch (error) {
@@ -225,6 +233,7 @@ const TaskView = (props) => {
   };
 
   const deleteTask = async () => {
+    console.log("remove");
     try {
       const res = await axios.delete(
         `https://localhost:44302/api/worktask?id=${selectedTask.id}`
@@ -256,7 +265,7 @@ const TaskView = (props) => {
     },
   ];
 
-  useEffect(() => checkValid(), [taskName]);
+  useEffect(() => checkValid(), [task.taskName]);
 
   return (
     <Modal
@@ -274,7 +283,7 @@ const TaskView = (props) => {
           title="Please fill task name"
           placeholder="Fill your task name"
           className="task-name-input"
-          value={taskName}
+          value={task.taskName}
           onChange={(e) => setTaskName(e.target.value)}
         />
       </div>
@@ -301,7 +310,7 @@ const TaskView = (props) => {
           <DatePicker
             defaultValue={dayjs("2015-01-01", dateFormat)}
             format={dateFormat}
-            value={dayjs(startDate, "YYYY-MM-DD")}
+            value={dayjs(task.startDate, "YYYY-MM-DD")}
             onChange={(value) => {
               if (value) {
                 const formattedValue = value.format("YYYY-MM-DD");
@@ -317,7 +326,7 @@ const TaskView = (props) => {
           <DatePicker
             defaultValue={dayjs("2015-01-01", dateFormat)}
             format={dateFormat}
-            value={dayjs(dueDate, "YYYY-MM-DD")}
+            value={dayjs(task.dueDate, "YYYY-MM-DD")}
             onChange={(value) => {
               if (value) {
                 const formattedValue = value.format("YYYY-MM-DD");
@@ -333,7 +342,7 @@ const TaskView = (props) => {
             Progress
           </span>
           <Select
-            defaultValue="In progress"
+            defaultValue={task.progress}
             style={{
               width: 120,
             }}
@@ -390,7 +399,7 @@ const TaskView = (props) => {
           rows={4}
           placeholder="Description"
           maxLength={100}
-          value={description}
+          value={task.description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
@@ -409,10 +418,15 @@ const TaskView = (props) => {
         <div>
           {files !== null &&
             files.map((file, index) => (
-              <div className=""key={index}>
-                <li >
-                  <a href= {file.url} target="_blank" download={file.name} key={index}  >
-                  {file.name} &nbsp;
+              <div className="" key={index}>
+                <li>
+                  <a
+                    href={file.url}
+                    target="_blank"
+                    download={file.name}
+                    key={index}
+                  >
+                    {file.name} &nbsp;
                   </a>
                   <DeleteOutlined
                     id="delete-file-icon"
