@@ -18,6 +18,7 @@ import Schedule from "./components/Schedule/Schedule";
 import Account from "./components/Account/Account";
 import { useUser } from "./UserContext";
 import Grid from "./components/Grid/Grid.jsx";
+import CategoryView from "./components/CategoryView/CategoryView.jsx";
 
 function App() {
   const { isAuthenticated, setIsAuthenticated } = useUser();
@@ -27,7 +28,7 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/TaskView" element={<TaskView />} />
-
+        <Route path="/CategoryView" element={<CategoryView />} />
         {!isAuthenticated && (
           <Route path="*" element={<Navigate to="/signin" />} />
         )}

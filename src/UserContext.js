@@ -12,7 +12,7 @@ const UserProvider = ({ children }) => {
 
   const fetchUserData = async() => {
     try {
-      const res = await axios.get(`https://localhost:44302/api/user/${user.id}`);
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/user/${user.id}`);
       console.log(res);
       setUser(res.data);
       localStorage.setItem("user", JSON.stringify(res.data));

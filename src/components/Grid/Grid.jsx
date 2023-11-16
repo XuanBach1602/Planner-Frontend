@@ -7,20 +7,45 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import axios from "axios";
+import TaskView from "../TaskView/TaskView";
 
 
 
 const Grid = () => {
   const [planId,categoryList,taskList, fetchCategoryData, fetchTaskData] = useOutletContext();
-  function createData(id,checkbox, title, assignment, startDate, dueDate, category,progress, priority) {
-    return {id, checkbox, title, assignment, startDate, dueDate, category,progress, priority };
-  }
 
-  useEffect(() => console.log(rows, taskList),[]);
-  
-  const rows = taskList.map((task) => createData(task.id,"", task.name, "", task.startDate, task.dueDate,
-  task.category, task.status, task.priority))   
+  const [openAddTask, setOpenAddTask] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  const showAddTask = () => {
+    setOpenAddTask(true);
+    // console.log(openAddTask);
+  };
+
+  const hideAddTask = () => {
+    setOpenAddTask(false);
+  };
+
+  const updateStatus = async(e,id, status) => {
+    e.stopPropagation();
+    try {
+      const data = status === "Completed"? "In progress" : "Completed";
+ 
+      const res = await axios.put(`${process.env.REACT_APP_API_URL}/api/worktask/status/${id}`,`"${data}"`,
+      {
+        headers: {
+          "Content-Type": "application/json", // Đặt Content-Type là application/json
+        },
+      })
+      console.log(res.data);
+      fetchTaskData();
+    } catch (error) {
+      console.log(error);
+    }
+  } 
   return (
     <div className="chart-container">
       <TableContainer component={Paper}>
@@ -33,30 +58,44 @@ const Grid = () => {
               <TableCell align="right">Start Date</TableCell>
               <TableCell align="right">Due Date</TableCell>
               <TableCell align="right">Category</TableCell>
-              <TableCell align="right">Progress</TableCell>
+              <TableCell align="right">Status</TableCell>
               <TableCell align="right">Priority</TableCell>
               
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.id}>
+            {taskList.map((task) => (
+              <TableRow style={{cursor:"pointer"}} key={task.id} onClick={(e) => {
+                showAddTask();
+                setSelectedTask(task);
+              }}>
                 <TableCell component="th" scope="row">
-                  <input type="checkbox" />
+                  <input type="checkbox" defaultChecked={task.status === "Completed"? true: false} onClick={(e) => updateStatus(e,task.id, task.status)}/>
                 </TableCell>
-                <TableCell align="right">{row.title}</TableCell>
-                <TableCell align="right">{row.assignment}</TableCell>
-                <TableCell align="right">{row.startDate}</TableCell>
-                <TableCell align="right">{row.dueDate}</TableCell>
-                <TableCell align="right">{row.category}</TableCell>
-                <TableCell align="right">{row.progress}</TableCell>
-                <TableCell align="right">{row.priority}</TableCell>
+                <TableCell align="right">{task.name}</TableCell>
+                <TableCell align="right">{task.assignment}</TableCell>
+                <TableCell align="right">{task.startDate}</TableCell>
+                <TableCell align="right">{task.dueDate}</TableCell>
+                <TableCell align="right">{task.categoryName}</TableCell>
+                <TableCell align="right">{task.status}</TableCell>
+                <TableCell align="right">{task.priority}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {openAddTask && 
+      <TaskView
+      showModal={openAddTask}
+      hideModal={hideAddTask}
+      selectedTask={selectedTask}
+      planId={planId}
+      fetchTaskData={fetchTaskData}
+    />}
     </div>
+
+  
   );
 };
 

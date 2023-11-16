@@ -57,7 +57,7 @@ function MainLayout({ children }) {
         createdUserID: createUserID,
       };
       try {
-        const res = await axios.post("https://localhost:44302/api/plan", data);
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/plan`, data);
         console.log(res);
         setValidationMessage("");
         setPrivacy(true);
@@ -81,7 +81,7 @@ function MainLayout({ children }) {
           Authorization: `Bearer ${token}`,
         };
         const res = await axios.get(
-          `https://localhost:44302/api/File?url=${user.imgUrl}`,
+          `${process.env.REACT_APP_API_URL}/api/File?url=${user.imgUrl}`,
           { headers, responseType: "blob" }
         );
         const blobData = res.data;
@@ -98,7 +98,7 @@ function MainLayout({ children }) {
   const fetchPlanData = async () => {
     try {
       const res = await axios.get(
-        `https://localhost:44302/api/plan/GetByUserID/${user.id}`
+        `${process.env.REACT_APP_API_URL}/api/plan/GetByUserID/${user.id}`
       );
       // console.log(res);
       setPlanList(res.data);

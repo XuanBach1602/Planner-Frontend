@@ -18,7 +18,7 @@ const Account = () => {
   const [gender, setGender] = useState(user.gender);
   const [dateOfBirth, setDateOfBirth] = useState(user.dateOfBirth);
   const [uploadAvatar, setUploadAvatar] = useState();
-  const [imgUrl, setimgUrl] = useState(`https://localhost:44302/api/File/avatar/${user.imgUrl}`);
+  const [imgUrl, setimgUrl] = useState(`${process.env.REACT_APP_API_URL}/api/File/avatar/${user.imgUrl}`);
   const [image, setImage] = useState(imgUrl);
   const [isValid, setIsValid] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -64,7 +64,7 @@ const Account = () => {
           console.log(key, value);
         });
         const res = await axios.put(
-          `https://localhost:44302/api/user/${user.id}`,
+          `${process.env.REACT_APP_API_URL}/api/user/${user.id}`,
           formData,
           {
             headers: {
@@ -93,7 +93,7 @@ const Account = () => {
       const headers = {
         Authorization: `Bearer ${token}`
     };
-      const res =await axios.get(`https://localhost:44302/api/File?url=${user.imgUrl}`, {headers,responseType: 'blob'});
+      const res =await axios.get(`${process.env.REACT_APP_API_URL}/api/File?url=${user.imgUrl}`, {headers,responseType: 'blob'});
       console.log(res);
       const blobData = res.data;
       setUploadAvatar(blobData);

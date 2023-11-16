@@ -29,7 +29,7 @@ const Hub = () => {
     const fetchPlanData = async () => {
       try {
         const res = await axios.get(
-          `https://localhost:44302/api/plan/GetByUserID/${user.id}`
+          `${process.env.REACT_APP_API_URL}/api/plan/GetByUserID/${user.id}`
         );
         setPlanList(res.data);
       } catch (error) {
@@ -47,7 +47,7 @@ const Hub = () => {
         const data = planList.map(async (plan) => {
           try {
             const res = await axios.get(
-              `https://localhost:44302/api/worktask/GetCountOfFilteredTask/${plan.id}`
+              `${process.env.REACT_APP_API_URL}/api/worktask/GetCountOfFilteredTask/${plan.id}`
             );
             return { data: res.data, name: plan.name, id: plan.id , isEmpty: checkEmptyPlan(res.data)};
           } catch (error) {
@@ -56,7 +56,7 @@ const Hub = () => {
         });
         Promise.all(data).then((data) => {
           const filterdData = data.filter((x) => x != null);
-          // console.log(filterdData);
+          console.log(filterdData);
           setStatisticalDataList(filterdData);
         });
       }
@@ -123,30 +123,30 @@ const Hub = () => {
                       data: [
                         {
                           id: 0,
-                          value:  plan.data.notStartedCount,
-                          label: `Not started`, 
-                          // ${plan.data.notStartedTasksCount}`,
+                          value:  plan.data.notStartedTasksCount,
+                          // label: `Not started`, 
+                          label:`Not started: ${plan.data.notStartedTasksCount}`,
                           color: "#9A9A9A",
                         },
                         {
                           id: 1,
                           value: plan.data.inProgressTasksCount,
-                          // label: `In progress: ${plan.data.inProgressTasksCount}`,
-                          label: `In progress:`,
+                          label: `In progress: ${plan.data.inProgressTasksCount}`,
+                          // label: `In progress:`,
                           color: "#53D344",
                         },
                         {
                           id: 2,
-                          value: plan.data.completed,
-                          // label: `Completed: ${plan.data.completedTasksCount}`,
-                          label: `Completed`,
+                          value: plan.data.completedTasksCount,
+                          label: `Completed: ${plan.data.completedTasksCount}`,
+                          // label: `Completed`,
                           color: "#61A7F7",
                         },
                         {
                           id: 3,
                           value: plan.data.lateTasksCount,
-                          // label: `Late: ${plan.data.lateTasksCount}`,
-                          label:"Late:",  
+                          label: `Late: ${plan.data.lateTasksCount}`,
+                          // label:"Late:",  
                           color: "#FC2A2A",
                         },
                       ],

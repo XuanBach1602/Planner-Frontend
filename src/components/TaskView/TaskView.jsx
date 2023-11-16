@@ -17,8 +17,8 @@ const TaskView = (props) => {
   const categoryId = props.categoryId;
   const showModal = props.showModal;
   const hideModal = props.hideModal;
-  const setIsTaskUpdate = props.setIsTaskUpdate;
   const fetchTaskData = props.fetchTaskData;
+  const fetchTaskCategoryData = props.fetchTaskCategoryData;
   const planId = props.planId;
 
   const [files, setFiles] = useState([]);
@@ -34,6 +34,7 @@ const TaskView = (props) => {
     description: "Đây là test task",
   };
 
+  const [task, setTask] = useState(defaultTask);
   const setTaskName = (value) =>
     setTask((prevTask) => ({ ...prevTask, taskName: value }));
   const setProgress = (value) =>
@@ -46,8 +47,11 @@ const TaskView = (props) => {
     setTask((prevTask) => ({ ...prevTask, dueDate: value }));
   const setDescription = (value) =>
     setTask((prevTask) => ({ ...prevTask, description: value }));
-  const [task, setTask] = useState(defaultTask);
-
+  
+  const setDate = (dueDate) => {
+    setDueDate(dueDate);
+    if(dueDate < task.startDate) setStartDate(dueDate);
+  }
   useEffect(() => {
     if (selectedTask != null) {
       setTaskName(selectedTask?.name);
@@ -62,14 +66,14 @@ const TaskView = (props) => {
         const filePromises = selectedTask.files.map(async (file) => {
           try {
             const response = await axios.get(
-              `https://localhost:44302/api/File?url=${file.url}`,
+              `${process.env.REACT_APP_API_URL}/api/File?url=${file.url}`,
               {
                 responseType: "blob", // Chỉ định kiểu dữ liệu nhận về là dạng blob (binary large object)
               }
             );
             const blobData = response.data;
             setUploadFiles((prevUploadFiles) => [
-              ...prevUploadFiles,
+              // ...prevUploadFiles,
               createAndSetFileName(blobData, file.name),
             ]);
 
@@ -160,7 +164,7 @@ const TaskView = (props) => {
 
         // console.log(data);
         const res = await axios.post(
-          "https://localhost:44302/api/worktask",
+          `${process.env.REACT_APP_API_URL}/api/worktask`,
           formData,
           {
             headers: {
@@ -172,6 +176,7 @@ const TaskView = (props) => {
         setErrorMessage("");
         // setIsTaskUpdate(true);
         fetchTaskData();
+        fetchTaskCategoryData();
         hideModal();
         // clearData();
       } catch (error) {
@@ -197,9 +202,10 @@ const TaskView = (props) => {
         formData.append("startDate", task.startDate);
         formData.append("dueDate", task.dueDate);
         formData.append("categoryID", selectedTask.categoryId);
-        formData.append("planID", planId);
+        formData.append("planID", selectedTask.planId);
         formData.append("createdUserID", user.id);
         formData.append("assignedUserID", user.id);
+        console.log(uploadFiles);
         if (uploadFiles && uploadFiles.length > 0) {
           for (let i = 0; i < uploadFiles.length; i++) {
             formData.append("attachedFiles", uploadFiles[i]);
@@ -208,7 +214,7 @@ const TaskView = (props) => {
 
         // console.log(data);
         const res = await axios.put(
-          "https://localhost:44302/api/worktask",
+          `${process.env.REACT_APP_API_URL}/api/worktask`,
           formData,
           {
             headers: {
@@ -219,6 +225,7 @@ const TaskView = (props) => {
         console.log(res);
         setErrorMessage("");
         fetchTaskData();
+        if(fetchTaskCategoryData) fetchTaskCategoryData();
         // setIsTaskUpdate(true);
 
         hideModal();
@@ -236,14 +243,14 @@ const TaskView = (props) => {
     console.log("remove");
     try {
       const res = await axios.delete(
-        `https://localhost:44302/api/worktask?id=${selectedTask.id}`
+        `${process.env.REACT_APP_API_URL}/api/worktask?id=${selectedTask.id}`
       );
-      setIsTaskUpdate(true);
       setErrorMessage("");
-      setIsTaskUpdate(true);
+      fetchTaskData();
+      if(fetchTaskCategoryData) fetchTaskCategoryData();
       hideModal();
     } catch (error) {
-      console(error);
+      console.log(error);
     }
   };
 
@@ -266,6 +273,8 @@ const TaskView = (props) => {
   ];
 
   useEffect(() => checkValid(), [task.taskName]);
+
+  useEffect(() => console.log(uploadFiles));
 
   return (
     <Modal
@@ -330,7 +339,7 @@ const TaskView = (props) => {
             onChange={(value) => {
               if (value) {
                 const formattedValue = value.format("YYYY-MM-DD");
-                setDueDate(formattedValue);
+                setDate(formattedValue);
               }
             }}
           />
@@ -347,6 +356,7 @@ const TaskView = (props) => {
               width: 120,
             }}
             onChange={(e) => handleProgressChange(e)}
+            value={task.progress}
             options={[
               {
                 value: "Not started",

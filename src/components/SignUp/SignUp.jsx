@@ -34,7 +34,7 @@ const SignUp = () => {
         formData.append("email", email);
         formData.append("password", password);
         formData.append("phoneNumber", phoneNumber);
-        var res = await axios.post("https://localhost:44302/auth/SignUp", formData,
+        var res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/SignUp`, formData,
         {
           headers:{
             "Content-Type": "multipart/form-data",
@@ -44,8 +44,10 @@ const SignUp = () => {
         navigate("/signin");
         console.log(res);
       } catch (error) {
-        console.log(error);
-        setValidationMessage("Email is already taken");
+          const data  = error.response.data.join(", ");
+          setValidationMessage(data); // Lưu thông báo lỗi vào state
+        // console.log(error.response.data);
+        // setValidationMessage("Email is already taken");
       }
     } else {
       setValidationMessage("Please fill full in form");

@@ -23,11 +23,12 @@ const SignIn = () => {
           email: email,
           password: password
         }
-        const res = await axios.post("https://localhost:44302/auth/SignIn",data);
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/SignIn`,data);
         // console.log(res);
         setIsAuthenticated(true);
         setUser(res.data.userInfo);
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.userInfo));
         // console.log(res.data.userInfo);
         setValidation("");
         navigate("/");
@@ -38,25 +39,25 @@ const SignIn = () => {
     }
   };
 
-  useEffect(() => {
-    const signinAuto = async() => {
-      const data = {
-        email: "xuanbach15@gmail.com",
-        password: "Bach@1602"
-      }
-      const res = await axios.post("https://localhost:44302/auth/SignIn",data);
-      // console.log(res);
-      setIsAuthenticated(true);
-      setUser(res.data.userInfo);
-      localStorage.setItem("user", JSON.stringify(res.data.userInfo));
-      localStorage.setItem("token", res.data.token);
-      console.log(res);
-      navigate("/Plan/58/");
-    };
-   signinAuto();
-  },[]
+  // useEffect(() => {
+  //   const signinAuto = async() => {
+  //     const data = {
+  //       email: "xuanbach15@gmail.com",
+  //       password: "Bach@1602"
+  //     }
+  //     const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/SignIn`,data);
+  //     // console.log(res);
+  //     setIsAuthenticated(true);
+  //     setUser(res.data.userInfo);
+  //     localStorage.setItem("user", JSON.stringify(res.data.userInfo));
+  //     localStorage.setItem("token", res.data.token);
+  //     console.log(res);
+  //     navigate("/");
+  //   };
+  //  signinAuto();
+  // },[]
     
-  )
+  // )
   return (
     <div className="signin-page">
       <div className="signin-main">

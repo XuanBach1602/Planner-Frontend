@@ -8,11 +8,8 @@ import axios from "axios";
 
 
 const Schedule = () => {
-  const [planId] = useOutletContext();
-  const [taskList, setTaskList] = useState([]);
-  const [categoryList, setCategoryList] = useState();
+  const [planId,categoryList,taskList, fetchCategoryData, fetchTaskData] = useOutletContext();
   const [openAddTask, setOpenAddTask] = useState(false);
-  const [isTaskUpdate, setIsTaskUpdate] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
   const now = moment();
@@ -24,52 +21,51 @@ const Schedule = () => {
   const hideAddTask = () => {
     setOpenAddTask(false);
   };
+  //   fetchTaskData();
+  //   setIsTaskUpdate(false);
+  // }, [categoryList, isTaskUpdate]);
 
-  useEffect(() => {
-    fetchTaskData();
-    setIsTaskUpdate(false);
-  }, [categoryList, isTaskUpdate]);
+  // useEffect(() => {
+  //   fetchCategoryData();
+  // }, []);
 
-  useEffect(() => {
-    fetchCategoryData();
-  }, []);
+  // const fetchCategoryData = async () => {
+  //   try {
+  //     const res = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/Category/GetByPlanID/${planId}`
+  //     );
+  //     setCategoryList(res.data);
+  //     // console.log(res.data);
+  //   } catch (error) {
+  //     console.log("category", error);
+  //   }
+  // };
 
-  const fetchCategoryData = async () => {
-    try {
-      const res = await axios.get(
-        `https://localhost:44302/api/Category/GetByPlanID/${planId}`
-      );
-      setCategoryList(res.data);
-      // console.log(res.data);
-    } catch (error) {
-      console.log("category", error);
-    }
-  };
-
-  const fetchTaskData = async () => {
-    try {
-      if(categoryList != null){
-        const promises = categoryList.map(async (category) => {
-          // console.log("categoryid", category.id);
-          const res = await axios.get(
-            `https://localhost:44302/api/worktask/GetByCategoryID/${category.id}`
-          );
-          // console.log(res.data);
-          return res.data;
-        });
+  // const fetchTaskData = async () => {
+  //   try {
+  //     if(categoryList != null){
+  //       const promises = categoryList.map(async (category) => {
+  //         // console.log("categoryid", category.id);
+  //         const res = await axios.get(
+  //           `${process.env.REACT_APP_API_URL}/api/worktask/GetByCategoryID/${category.id}`
+  //         );
+  //         // console.log(res.data);
+  //         return res.data;
+  //       });
   
-        const taskResults = await Promise.all(promises);
-        const filteredTaskResults = taskResults
-          .filter((data) => data !== null)
-          .flatMap((data) => data);
-        // console.log(filteredTaskResults);
+  //       const taskResults = await Promise.all(promises);
+  //       const filteredTaskResults = taskResults
+  //         .filter((data) => data !== null)
+  //         .flatMap((data) => data);
+  //       // console.log(filteredTaskResults);
   
-        setTaskList(filteredTaskResults);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //       setTaskList(filteredTaskResults);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
 
   const dateCellRender = (value) => {
     const currentDate = value.format("YYYY-MM-DD");
@@ -131,9 +127,9 @@ const Schedule = () => {
       <TaskView
       showModal={openAddTask}
       hideModal={hideAddTask}
-      setIsTaskUpdate={setIsTaskUpdate}
       selectedTask={selectedTask}
       planId={planId}
+      fetchTaskData={fetchTaskData}
     />}
     </>
   );

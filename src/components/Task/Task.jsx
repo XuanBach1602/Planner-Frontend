@@ -1,13 +1,33 @@
 import React, { useState } from "react";
 import "./Task.css";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import axios from "axios";
 const Task = (props) => {
-  const [taskName, setTaskName] = useState(props.name);
-  const [dueDate, setDueDate] = useState(props.dueDate);
+  const [task, setTask] = useState(props.task);
+  const fetchData = props.fetchData;
+  const [taskName, setTaskName] = useState(task.name);
+  const [dueDate, setDueDate] = useState(task.dueDate);
+  const updateStatus = async(e) => {
+    e.stopPropagation();
+    try {
+      const data = task.status === "Completed"? "In progress" : "Completed";
+ 
+      const res = await axios.put(`${process.env.REACT_APP_API_URL}/api/worktask/status/${task.id}`,`"${data}"`,
+      {
+        headers: {
+          "Content-Type": "application/json", // Đặt Content-Type là application/json
+        },
+      })
+      console.log(res.data);
+      fetchData();
+    } catch (error) {
+      console.log(error);
+    }
+  }
   return (
     <div className="task">
       <div className="task_name">
-        <input type="checkbox" name="" id="" className="status-box" />
+        <input defaultChecked={task.status === "Completed" ? true : false} type="checkbox" name="" id="" className="status-box" onClick={(e) => updateStatus(e)}/>
         <p style={{overflow:"hidden"}}>{taskName}</p>
       </div>
       <div className="due-date">

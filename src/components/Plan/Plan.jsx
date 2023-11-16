@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import "./Plan.css";
 import axios from "axios";
 import { DownOutlined } from "@ant-design/icons";
-import { Dropdown, Space, Button } from "antd";
+import { Dropdown, Space, Select, Button } from "antd";
 import { useParams } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -18,28 +18,31 @@ function Plan() {
   const [planName, setPLanName] = useState(plan.name);
   const navigate = useNavigate();
   const [setIsPlanUpdate] = useOutletContext();
+  const [progress, setProgress] = useState("");
+  const [due, setDue] = useState("");
+  const [priority, setPriority] = useState("");
   // List of members
-  const items = [
+  const memberList = [
     {
       label: <div>Nguyen Xuan Bach</div>,
       key: "0",
     },
   ];
 
-
   const features = [
-    { id: 1, name: "Grid" , value:"Grid"},
-    { id: 2, name: "Board", value:"" },
+    { id: 1, name: "Grid", value: "Grid" },
+    { id: 2, name: "Board", value: "" },
     { id: 3, name: "Schedule", value: "Schedule" },
   ];
-
   const handleFeatureClick = (id) => {
     setActiveId(id);
   };
 
   const fetchPlanData = async () => {
     try {
-      const res = await axios.get(`https://localhost:44302/api/plan/${id}`);
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/plan/${id}`
+      );
       setPlan(res.data);
       // console.log(res);
     } catch (error) {
@@ -47,16 +50,18 @@ function Plan() {
     }
   };
 
-  const deletePlan = async() => {
+  const deletePlan = async () => {
     try {
-      const res = await axios.delete(`https://localhost:44302/api/plan?id=${id}`);
+      const res = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/plan?id=${id}`
+      );
       console.log(res);
       setIsPlanUpdate(true);
       navigate("/");
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   const updatePlan = async () => {
     if (planName != null) {
@@ -67,7 +72,10 @@ function Plan() {
           isPrivacy: plan.isPrivacy,
           createdUserId: plan.createdUserId,
         };
-        const res = await axios.put("https://localhost:44302/api/plan", data);
+        const res = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/plan`,
+          data
+        );
         fetchPlanData();
         setIsPlanUpdate(true);
         console.log(res);
@@ -77,7 +85,6 @@ function Plan() {
     }
   };
 
-
   //Dang test
   const [categoryList, setCategoryList] = useState([]);
   const [taskList, setTaskList] = useState([]);
@@ -85,7 +92,7 @@ function Plan() {
   const fetchCategoryData = async () => {
     try {
       const res = await axios.get(
-        `https://localhost:44302/api/Category/GetByPlanID/${id}`
+        `${process.env.REACT_APP_API_URL}/api/Category/GetByPlanID/${id}`
       );
       setCategoryList(res.data);
       // console.log(res.data);
@@ -96,22 +103,11 @@ function Plan() {
 
   const fetchTaskData = async () => {
     try {
-      const promises = categoryList.map(async (category, index) => {
-        // console.log("categoryid", category.id);
-        const res = await axios.get(
-          `https://localhost:44302/api/worktask/GetByCategoryID/${category.id}`
-        );
-        // console.log(res.data);
-        return res.data;
-      });
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/worktask/GetByPlanID/${id}`
+      );
 
-      const taskResults = await Promise.all(promises);
-      const filteredTaskResults = taskResults
-        .filter((data) => data !== null)
-        .flatMap((data) => data);
-      // console.log(filteredTaskResults);
-
-      setTaskList(filteredTaskResults);
+      setTaskList(res.data);
     } catch (error) {
       console.log(error);
     }
@@ -128,9 +124,6 @@ function Plan() {
     }
   }, [categoryList, isTaskUpdate]);
 
-
-
-
   const setPlanInput = (e) => {
     if (e.key === "Enter") {
       updatePlan(id);
@@ -141,6 +134,104 @@ function Plan() {
   useEffect(() => {
     fetchPlanData();
   }, [id]);
+
+  //Filter
+  const filter = async () => {
+    try {
+      const data = {
+        due: due,
+        priority: priority,
+        progress: progress,
+      };
+
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/worktask/GetByPlanID/${id}`,
+        { params: data }
+      );
+      console.log(res.data);
+      setTaskList(res.data);
+    } catch (error) {
+      console.log(error.response.data);
+    }
+  };
+
+  const clearFilter = () => {
+    setDue("");
+    setPriority("");
+    setProgress("");
+  }
+
+  const optionsByFilterType = [
+    {
+      id: 1,
+      title: "Due",
+      values: [
+        { value: "Today", label: "Today" },
+        { value: "Tomorrow", label: "Tomorrow" },
+        { value: "Late", label: "Late" },
+        { value: "Future", label: "Future" },
+        { value: "", label: "None" },
+      ],
+      defaultValue:due,
+      handleChange: (value) => setDue(value),
+    },
+    {
+      id: 2,
+      title: "Priority",
+      values: [
+        { value: "Low", label: "Low" },
+        { value: "Medium", label: "Medium" },
+        { value: "Important", label: "Important" },
+        { value: "Urgent", label: "Urgent" },
+        { value: "", label: "None" },
+      ],
+      defaultValue:priority,
+      handleChange: (value) => setPriority(value),
+    },
+    {
+      id: 3,
+      title: "Progress",
+      values: [
+        { value: "Not started", label: "Not started" },
+        { value: "In progress", label: "In progress" },
+        { value: "Completed", label: "Completed" },
+        { value: "", label: "None" },
+      ],
+      defaultValue:progress,
+      handleChange: (value) => setProgress(value),
+    },
+  ];
+
+  const filterItems = [
+    {
+      label: (
+        <div onClick={(e) => e.stopPropagation()}>
+          <div style={{display:"flex",height:"25px",justifyContent:'space-between'}}>
+            <h4>Filter</h4>
+            <span style={{color:'#83FB3F'}} onClick={() => clearFilter()} >Clear</span>
+          </div>
+          {optionsByFilterType.map((option) => (
+            <div key={option.id} style={{ marginBottom: "5px" }}>
+              <label style={{ minWidth: "60px" }}>{option.title} &nbsp;</label>
+              <Select
+                onChange={(value) => option.handleChange(value)}
+                // defaultValue={option.defaultValue}
+                value={option.defaultValue}
+                className="filter-item"
+                options={option.values}
+              />
+            </div>
+          ))}
+          <div className="search-btn">
+            <Button type="primary" onClick={() => filter()}>
+              Search
+            </Button>
+          </div>
+        </div>
+      ),
+      key: "0",
+    },
+  ];
 
   return (
     <div className="plan-page">
@@ -184,7 +275,7 @@ function Plan() {
         <div className="Members member-dropdown">
           <Dropdown
             menu={{
-              items,
+              items: memberList,
             }}
             trigger={["click"]}
           >
@@ -196,15 +287,40 @@ function Plan() {
             </a>
           </Dropdown>
         </div>
-        <div className="Filters">Filter</div>
+        <div className="Filters">
+          <Dropdown
+            menu={{
+              items: filterItems,
+            }}
+            trigger={["click"]}
+            placement="bottom"
+          >
+            <a onClick={(e) => e.preventDefault()}>
+              <Space style={{ color: "black" }}>
+                Filter
+                <DownOutlined />
+              </Space>
+            </a>
+          </Dropdown>
+        </div>
 
-       <div className="m-3 delete-plan-icon" onClick={() => deletePlan()}> <DeleteOutlined /></div>
-        
+        <div className="m-3 delete-plan-icon" onClick={() => deletePlan()}>
+          {" "}
+          <DeleteOutlined />
+        </div>
       </div>
       <hr style={{ margin: 0 }} />
       <div className="switch-page">
         {/* <Board /> */}
-        <Outlet context={[id,categoryList,taskList, fetchCategoryData, fetchTaskData]} />
+        <Outlet
+          context={[
+            id,
+            categoryList,
+            taskList,
+            fetchCategoryData,
+            fetchTaskData,
+          ]}
+        />
       </div>
     </div>
   );
