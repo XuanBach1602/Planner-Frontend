@@ -8,69 +8,34 @@ import AddIcon from "@mui/icons-material/Add";
 import HomeIcon from "@mui/icons-material/Home";
 import { Collapse } from "antd";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import { Modal } from "antd";
-import { Input, Form } from "antd";
-import { Select } from "antd";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { Outlet } from "react-router-dom";
 import { useUser } from "../UserContext";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import { Dropdown, Space } from "antd";
+import Notification from "../components/Notification/Notification";
+import AddPlan from "../components/AddPlan/AddPlan";
+import { DownOutlined } from "@ant-design/icons";
 
-function MainLayout({ children }) {
+function MainLayout() {
+  const { user, setUser, setIsAuthenticated } = useUser();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [planName, setPLanName] = useState("");
-  const [privacy, setPrivacy] = useState(false);
-  const [validationMessage, setValidationMessage] = useState("");
-  const [isValidInput, setIsValidInput] = useState(false);
   const [planList, setPlanList] = useState([]);
   const [isPlanUpdate, setIsPlanUpdate] = useState(false);
-  const { user, setUser, setIsAuthenticated } = useUser();
   const [image, setImage] = useState();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const navigate = useNavigate();
+  const [notificationList, setNotificationList] = useState();
+  const [notificationItems, setNotificationItems] = useState([]);
+  const [notSeenNotify, setNotSeenNotify] = useState(0);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
-  };
-
-  const checkValidInput = () => {
-    var bool = planName !== "";
-    console.log(bool);
-    setIsValidInput(bool);
   };
 
   const signOut = () => {
     setIsAuthenticated(false);
     setUser(null);
     navigate("/signin");
-  };
-
-  useEffect(() => checkValidInput(), [planName]);
-
-  const addNewPlan = async () => {
-    // console.log(planName, privacy);
-    var createUserID = user.id;
-    if (isValidInput) {
-      const data = {
-        name: planName,
-        isPrivacy: privacy,
-        createdUserID: createUserID,
-      };
-      try {
-        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/plan`, data);
-        console.log(res);
-        setValidationMessage("");
-        setPrivacy(true);
-        // document.querySelector("planName-input").placeholder.value = "";
-        setIsPlanUpdate(true);
-        setOpen(false);
-      } catch (error) {
-        console.log(error);
-        setValidationMessage("Please refill in form");
-      }
-    } else {
-      setValidationMessage("Please fill in form");
-    }
   };
 
   useEffect(() => {
@@ -93,7 +58,7 @@ function MainLayout({ children }) {
     };
 
     fetchAvatar();
-  }, []);
+  }, [user]);
 
   const fetchPlanData = async () => {
     try {
@@ -107,6 +72,22 @@ function MainLayout({ children }) {
     }
   };
 
+  const fetchNotificationData = async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/Notification/${user.id}`
+      );
+      var data = res.data;
+      var count = data.filter((x) => x.isSeen === false).length;
+      setNotSeenNotify(count);
+      setNotificationList(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => fetchNotificationData, [user.id]);
+
   const text = `
   A dog is a type of domesticated animal.
   Known for its loyalty and faithfulness,
@@ -115,7 +96,7 @@ function MainLayout({ children }) {
   const items = [
     {
       key: "1",
-      label: "Pinned",
+      label: "All",
       children: (
         <div className="">
           {planList.map((plan, index) => (
@@ -133,75 +114,112 @@ function MainLayout({ children }) {
         </div>
       ),
     },
-    {
-      key: "2",
-      label: "All",
-      children: <p>{text}</p>,
-    },
+    // {
+    //   key: "2",
+    //   label: "All",
+    //   children: <p>{text}</p>,
+    // },
   ];
+
+  useEffect(() => {
+    if (notificationList !== undefined && notificationList.length > 0) {
+      const notifications = notificationList.map((notification) => ({
+        key: notification.id,
+        label: 
+          <div onClick={(e) => e.stopPropagation()} key={notification.id} >
+            <Notification fetchNotificationData={fetchNotificationData} notification={notification} />
+          </div>
+        ,
+      }));
+      setNotificationItems(notifications);
+    }
+  }, [notificationList]);
 
   useEffect(() => {
     fetchPlanData();
     setIsPlanUpdate(false);
   }, [isPlanUpdate]);
 
+  const accountItems = [
+    {
+      label: (
+        <a onClick={() => navigate("/account")}>
+          <div style={{ marginLeft: "15px" }}>{user.name}</div>
+        </a>
+      ),
+      key: "0",
+    },
+    {
+      label: <a onClick={() => navigate("/account")}>Account infomation</a>,
+      key: "1",
+    },
+    {
+      label: <a>Change password</a>,
+      key: "2",
+    },
+    {
+      label: <a onClick={() => signOut()}>Sign Out</a>,
+      key: "3",
+    },
+  ];
+
   return (
-    <div className="main" style={{ width: "100%", height: "100%" }}>
+    <div
+      className="main"
+      style={{ width: "100%", height: "calc(100% - 50px)" }}
+    >
       {/* Navbar */}
       <header className="nav_bar">
         <div className="title">Planner</div>
         <div className="navbar-right">
+          <div className="notification">
+            <Dropdown
+              menu={{
+                items: notificationItems,
+              }}
+              trigger={["click"]}
+              className="notification-dropdown"
+              overlayClassName="notification-item"
+            >
+              <div style={{ cursor: "pointer", position:"relative" }} >
+                <Space>
+                  <span style={{ position: "absolute", top: "-5px", right:'-5px' }}>
+                    {notSeenNotify}
+                  </span>
+                  <NotificationsIcon style={{color:'#79ECEE'}} />
+                </Space>
+              </div>
+            </Dropdown>
+          </div>
+
           <div className="setting">
             <SettingsIcon />
           </div>
           <div className="account">
-            <div className="dropdown">
-              <div
-                className="dropdown-toggle"
-                type="button"
-                id="dropdownMenuButton1"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                style={{ backgroundColor: "none" }}
-              >
-                {image && (
-                  <img
-                    src={image}
-                    alt="avatar"
-                    srcSet=""
-                    style={{
-                      width: "30px",
-                      height: "30px",
-                      borderRadius: "100%",
-                    }}
-                  />
-                )}
+            <Dropdown
+              menu={{
+                items: accountItems,
+              }}
+              trigger={["click"]}
+            >
+              <div style={{ cursor: "pointer" }}>
+                <Space>
+                  {image && (
+                    <img
+                      src={image}
+                      alt="avatar"
+                      srcSet=""
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "100%",
+                      }}
+                    />
+                  )}
+                  <DownOutlined />
+                </Space>
               </div>
-              <ul
-                className="dropdown-menu"
-                aria-labelledby="dropdownMenuButton1"
-              >
-                <li style={{ marginLeft: "15px" }}>{user.name}</li>
-                <li>
-                  <a
-                    className="dropdown-item"
-                    onClick={() => navigate("/account")}
-                  >
-                    Account infomation
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown-item" href="#">
-                    Change password
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown-item" onClick={() => signOut()}>
-                    Sign Out
-                  </a>
-                </li>
-              </ul>
-            </div>
+            </Dropdown>
           </div>
         </div>
       </header>
@@ -234,82 +252,9 @@ function MainLayout({ children }) {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Add plan */}
       {open && (
-        <Modal
-          title="New plan"
-          centered
-          open={open}
-          onOk={(e) => {
-            setPLanName("");
-            addNewPlan(e);
-          }}
-          onCancel={() => {
-            setPLanName("");
-            setOpen(false);
-          }}
-          width={1100}
-          height={600}
-          style={{}}
-        >
-          <div style={{ display: "flex" }}>
-            <img
-              src="https://res.cdn.office.net/planner/files/plex_prod_20230925.001/create-new-illustration.svg"
-              alt=""
-            />
-            <div className="plan-container">
-              <h1>Name your plan</h1>
-              <Form>
-                <Form.Item
-                  name="planName"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please fill your plan name!",
-                    },
-                  ]}
-                >
-                  <Input
-                    className="planName-input"
-                    placeholder="Fill your plan name"
-                    onChange={(e) => setPLanName(e.target.value)}
-                    onBlur={(e) => (e.target.value = "")}
-                  />
-                </Form.Item>
-                <span
-                  className="validation-add-plan"
-                  style={{ color: "#FF0F00" }}
-                >
-                  {validationMessage}
-                </span>
-              </Form>
-
-              <Select
-                defaultValue="Private"
-                style={{
-                  marginTop: 30,
-                  width: 200,
-                }}
-                onChange={(value) => setPrivacy(value)}
-                options={[
-                  {
-                    label: "Privacy",
-                    options: [
-                      {
-                        label: "Private",
-                        value: false,
-                      },
-                      {
-                        label: "Public",
-                        value: true,
-                      },
-                    ],
-                  },
-                ]}
-              />
-            </div>
-          </div>
-        </Modal>
+        <AddPlan fetchPlanData={fetchPlanData} setOpen={setOpen} open={open} />
       )}
     </div>
   );

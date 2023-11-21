@@ -91,16 +91,6 @@ const Board = () => {
           </div>
         </div>
       </div>
-      {/* {openAddTask && (
-        <TaskView
-          showModal={openAddTask}
-          hideModal={hideAddTask}
-          categoryId={categoryId}
-          selectedTask={selectedTask}
-          planId={planId}
-          fetchTaskData={fetchTaskData}
-        />
-      )} */}
     </div>
   );
 };

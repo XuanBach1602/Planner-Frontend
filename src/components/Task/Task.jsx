@@ -4,7 +4,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import axios from "axios";
 const Task = (props) => {
   const [task, setTask] = useState(props.task);
-  const fetchData = props.fetchData;
+  const fetchTaskData = props.fetchTaskData;
   const [taskName, setTaskName] = useState(task.name);
   const [dueDate, setDueDate] = useState(task.dueDate);
   const updateStatus = async(e) => {
@@ -19,7 +19,7 @@ const Task = (props) => {
         },
       })
       console.log(res.data);
-      fetchData();
+      fetchTaskData();
     } catch (error) {
       console.log(error);
     }

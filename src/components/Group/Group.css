@@ -1,0 +1,56 @@
+.group-container {
+    width: 400px;
+    height: 100%;
+    border: solid 0.3px #99AB8E;
+    padding: 20px;
+    background-color: white;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 3;
+}
+
+.groud-title {
+    font-size: 32px;
+    font-weight: 400;
+    text-align: center;
+}
+
+.member-info {
+    display: flex;
+    padding: 5px;
+    height: 45px;
+    border: solid 0.3px #B7C6AE;
+    cursor: pointer;
+    align-items: center;
+}
+
+
+.member-avatar {
+    font-weight: 350;
+    width: 30px;
+    height: 30px;
+    border-radius: 100%;
+    margin-right: 10px;
+}
+
+.role-name {
+    margin-left: auto;
+}
+
+
+.add-member-btn {
+    margin-top: 20px;
+}
+
+.member-selection {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+.member-selection:hover {
+    cursor: pointer;
+    background-color: #B7C6AE;
+}
+

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "../../UserContext";
 import { PieChart } from "@mui/x-charts/PieChart";
-import "./Hub.css"
+import "./Hub.css";
 import axios from "axios";
 import { Navigate, useNavigate } from "react-router-dom";
 const Hub = () => {
@@ -9,22 +9,22 @@ const Hub = () => {
   const { user } = useUser();
   const [planList, setPlanList] = useState([]);
   const [statisticalDataList, setStatisticalDataList] = useState([]);
-  const planName = "BTL IT3180";
-  const convertToShortName = (planName) =>{
-   return planName
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase();
-  }   
+
+  const convertToShortName = (planName) => {
+    return planName
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase();
+  };
 
   const checkEmptyPlan = (data) => {
     const values = Object.values(data);
     const total = values.reduce((acc, currentValue) => {
-        return acc + currentValue;
+      return acc + currentValue;
     }, 0);
     return total !== 0;
-  } 
+  };
   useEffect(() => {
     const fetchPlanData = async () => {
       try {
@@ -49,14 +49,19 @@ const Hub = () => {
             const res = await axios.get(
               `${process.env.REACT_APP_API_URL}/api/worktask/GetCountOfFilteredTask/${plan.id}`
             );
-            return { data: res.data, name: plan.name, id: plan.id , isEmpty: checkEmptyPlan(res.data)};
+            return {
+              data: res.data,
+              name: plan.name,
+              id: plan.id,
+              isEmpty: checkEmptyPlan(res.data),
+            };
           } catch (error) {
             return null;
           }
         });
         Promise.all(data).then((data) => {
           const filterdData = data.filter((x) => x != null);
-          console.log(filterdData);
+          // console.log(filterdData);
           setStatisticalDataList(filterdData);
         });
       }
@@ -64,7 +69,7 @@ const Hub = () => {
     fetchPlanStatiticData();
   }, [planList]);
 
-  //   const palette = ['red', 'blue', 'green'];
+
 
   return (
     <div className="hub-container">
@@ -73,49 +78,21 @@ const Hub = () => {
       </h1>
       <h3 style={{ fontSize: "24px", fontWeight: "400" }}>All</h3>
       <div className="plan-list-display">
-        {/* <div className="plan-item-statistical">
-          <div className="d-flex align-items-center">
-            <div className="plan-avatar-hub">{shortName}</div>
-            <span>{planName}</span>
-          </div>
-          <div className="statistical-table d-flex">
-            <PieChart
-              series={[
-                {
-                  data: data,
-                  innerRadius: 81,
-                  outerRadius: 100,
-                  paddingAngle: 0,
-                  cornerRadius: 6,
-                  startAngle: 0,
-                  endAngle: 360,
-                  cx: 95,
-                  cy: 95,
-                },
-              ]}
-              slotProps={{
-                legend: {
-                  direction: "column",
-                  position: { vertical: "top", horizontal: "right" },
-                  padding: { top: 25, left: 20 },
-                },
-              }}
-              //   colors={palette}
-              height={350}
-              width={350}
-              margin={{ right: 100 }}
-            />
-          </div>
-        </div> */}
         {statisticalDataList != null &&
           statisticalDataList.map((plan, index) => (
-            <div className="plan-item-statistical" key={index} onClick={() => navigate(`plan/${plan.id}`)}>
+            <div
+              className="plan-item-statistical"
+              key={index}
+              onClick={() => navigate(`plan/${plan.id}`)}
+            >
               <div className="d-flex align-items-center">
-                <div className="plan-avatar-hub">{convertToShortName(plan.name)}</div>
+                <div className="plan-avatar-hub">
+                  {convertToShortName(plan.name)}
+                </div>
                 <span>{plan.name}</span>
               </div>
-      
-              <div className="statistical-table d-flex">
+
+              <div className="statistical-table d-flex" style={{}}>
                 <PieChart
 
                   series={[
@@ -173,6 +150,7 @@ const Hub = () => {
                   getLabel={(datum) => `${datum.label}`}
                   arcLabel={(item) => `${item.label}`} // Tùy chỉnh nội dung label khi hover
                 />
+                
               </div>
             </div>
           ))}

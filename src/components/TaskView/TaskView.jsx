@@ -62,6 +62,7 @@ const TaskView = (props) => {
       setStartDate(selectedTask?.startDate);
       setFiles([]);
       setUploadFiles([]);
+      const tmp = [];
       if (selectedTask.files != null && selectedTask.files.length > 0) {
         const filePromises = selectedTask.files.map(async (file) => {
           try {
@@ -72,10 +73,11 @@ const TaskView = (props) => {
               }
             );
             const blobData = response.data;
-            setUploadFiles((prevUploadFiles) => [
-              // ...prevUploadFiles,
-              createAndSetFileName(blobData, file.name),
-            ]);
+            // setUploadFiles((prevUploadFiles) => [
+            //    ...prevUploadFiles,
+            //   createAndSetFileName(blobData, file.name),
+            // ]);
+            tmp.push(createAndSetFileName(blobData, file.name));
 
             const url = window.URL.createObjectURL(new Blob([blobData]));
             return { name: file.name, url: url };
@@ -89,6 +91,7 @@ const TaskView = (props) => {
           .then((Files) => {
             const filteredFiles = Files.filter((file) => file !== null);
             setFiles(filteredFiles);
+            setUploadFiles(tmp);
           })
           .catch((error) => {
             console.error(error);
@@ -125,16 +128,21 @@ const TaskView = (props) => {
     const url = window.URL.createObjectURL(newFile);
 
     setFiles([...files, { name: newFile.name, url: url }]);
-    console.log("newFile:", newFile);
+    // console.log("newFile:", newFile);
     setUploadFiles([...uploadFiles, newFile]);
-    console.log(uploadFiles);
+    // console.log(uploadFiles);
     // }
   };
 
-  const removeFile = (fileName) => {
-    const updatedFiles = files.filter((file) => file.name !== fileName);
+  const removeFile = (index) => {
+    
+    // const updatedFiles = files.filter((file) => file.name !== fileName);
+    // const updatedUploadFiles = uploadFiles.filter(
+    //   (file) => file.name !== fileName
+    // );
+    const updatedFiles = files.filter((file,idx) => idx !== index);
     const updatedUploadFiles = uploadFiles.filter(
-      (file) => file.name !== fileName
+      (file,idx) => idx !== index
     );
     setFiles(updatedFiles);
     setUploadFiles(updatedUploadFiles);
@@ -190,7 +198,7 @@ const TaskView = (props) => {
   };
 
   const updateTask = async () => {
-    console.log(selectedTask);
+    // console.log(selectedTask);
     if (isValidInput) {
       try {
         const formData = new FormData();
@@ -205,7 +213,6 @@ const TaskView = (props) => {
         formData.append("planID", selectedTask.planId);
         formData.append("createdUserID", user.id);
         formData.append("assignedUserID", user.id);
-        console.log(uploadFiles);
         if (uploadFiles && uploadFiles.length > 0) {
           for (let i = 0; i < uploadFiles.length; i++) {
             formData.append("attachedFiles", uploadFiles[i]);
@@ -274,7 +281,7 @@ const TaskView = (props) => {
 
   useEffect(() => checkValid(), [task.taskName]);
 
-  useEffect(() => console.log(uploadFiles));
+  // useEffect(() => console.log(uploadFiles));
 
   return (
     <Modal
@@ -440,7 +447,7 @@ const TaskView = (props) => {
                   </a>
                   <DeleteOutlined
                     id="delete-file-icon"
-                    onClick={() => removeFile(file.name)}
+                    onClick={() => removeFile(index)}
                   />
                 </li>
               </div>

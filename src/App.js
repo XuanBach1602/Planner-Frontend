@@ -1,34 +1,29 @@
 import React, { useState } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 import "./App.css";
+import 'react-toastify/dist/ReactToastify.css';
 import MainLayout from "./layouts/layout";
 import Hub from "./components/Hub/Hub.jsx";
 import Plan from "./components/Plan/Plan.jsx";
 import SignUp from "./components/SignUp/SignUp.jsx";
 import SignIn from "./components/SignIn/SignIn";
 import Board from "./components/Board/Board";
-import TaskView from "./components/TaskView/TaskView";
 import Schedule from "./components/Schedule/Schedule";
 import Account from "./components/Account/Account";
 import { useUser } from "./UserContext";
 import Grid from "./components/Grid/Grid.jsx";
-import CategoryView from "./components/CategoryView/CategoryView.jsx";
-
+import { ToastContainer } from 'react-toastify';
+import Notification from "./components/Notification/Notification.jsx";
 function App() {
   const { isAuthenticated, setIsAuthenticated } = useUser();
   return (
     <Router>
+      <ToastContainer />
       <Routes>
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/TaskView" element={<TaskView />} />
-        <Route path="/CategoryView" element={<CategoryView />} />
+        <Route path="/notification" element={<Notification />} />
         {!isAuthenticated && (
           <Route path="*" element={<Navigate to="/signin" />} />
         )}

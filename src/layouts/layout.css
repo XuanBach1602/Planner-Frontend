@@ -146,3 +146,11 @@
     align-items: center;
     color: white;
 }
+
+.notification-item .ant-dropdown-menu-item {
+    padding: 0 5px !important;
+}
+
+.notification-item .ant-dropdown-menu {
+    background-color: #E5E5E5 !important ;
+}

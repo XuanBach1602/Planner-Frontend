@@ -44,8 +44,9 @@ const SignUp = () => {
         navigate("/signin");
         console.log(res);
       } catch (error) {
-          const data  = error.response.data.join(", ");
-          setValidationMessage(data); // Lưu thông báo lỗi vào state
+        console.log(error);
+          // const data  = error.response.data.join(", ");
+          // setValidationMessage(data); // Lưu thông báo lỗi vào state
         // console.log(error.response.data);
         // setValidationMessage("Email is already taken");
       }

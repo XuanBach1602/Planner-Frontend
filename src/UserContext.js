@@ -15,6 +15,7 @@ const UserProvider = ({ children }) => {
       const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/user/${user.id}`);
       console.log(res);
       setUser(res.data);
+      console.log(res.data);
       localStorage.setItem("user", JSON.stringify(res.data));
     }
     catch(err){

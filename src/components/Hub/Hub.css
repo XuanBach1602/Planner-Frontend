@@ -14,8 +14,9 @@
     gap: 15px;
 }
 .hub-container {
-    
-    margin: 20px;
+    overflow-y: auto;
+    /* margin: 20px; */
+    margin-left:20px ;
 }
 
 .plan-avatar-hub {

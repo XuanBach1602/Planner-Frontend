@@ -1,0 +1,34 @@
+.sended-user-img {
+    height: 50px;
+    width: 50px;
+    border-radius: 100%;
+}
+
+.notification-container {
+    display: flex;
+    width: 400px;
+    padding: 5px;
+    align-items: center;
+    cursor: pointer;
+    gap: 10px;
+}
+
+.bold-letter {
+    font-weight: 500;
+}
+
+
+.notification-verify {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    align-items: center;
+}
+
+.seen {
+    background-color: #E5E5E5 ;
+}
+
+.not-seen {
+    background-color: white;
+}

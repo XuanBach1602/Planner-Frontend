@@ -21,51 +21,6 @@ const Schedule = () => {
   const hideAddTask = () => {
     setOpenAddTask(false);
   };
-  //   fetchTaskData();
-  //   setIsTaskUpdate(false);
-  // }, [categoryList, isTaskUpdate]);
-
-  // useEffect(() => {
-  //   fetchCategoryData();
-  // }, []);
-
-  // const fetchCategoryData = async () => {
-  //   try {
-  //     const res = await axios.get(
-  //       `${process.env.REACT_APP_API_URL}/api/Category/GetByPlanID/${planId}`
-  //     );
-  //     setCategoryList(res.data);
-  //     // console.log(res.data);
-  //   } catch (error) {
-  //     console.log("category", error);
-  //   }
-  // };
-
-  // const fetchTaskData = async () => {
-  //   try {
-  //     if(categoryList != null){
-  //       const promises = categoryList.map(async (category) => {
-  //         // console.log("categoryid", category.id);
-  //         const res = await axios.get(
-  //           `${process.env.REACT_APP_API_URL}/api/worktask/GetByCategoryID/${category.id}`
-  //         );
-  //         // console.log(res.data);
-  //         return res.data;
-  //       });
-  
-  //       const taskResults = await Promise.all(promises);
-  //       const filteredTaskResults = taskResults
-  //         .filter((data) => data !== null)
-  //         .flatMap((data) => data);
-  //       // console.log(filteredTaskResults);
-  
-  //       setTaskList(filteredTaskResults);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
 
   const dateCellRender = (value) => {
     const currentDate = value.format("YYYY-MM-DD");

@@ -16,9 +16,10 @@ const Account = () => {
   const [email, setEmail] = useState(user.email);
   const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber);
   const [gender, setGender] = useState(user.gender);
-  const [dateOfBirth, setDateOfBirth] = useState(user.dateOfBirth);
+  const [dateOfBirth, setDateOfBirth] = useState(user.dateOfBirth === null ? "2020-10-10" : user.dateOfBirth);
   const [uploadAvatar, setUploadAvatar] = useState();
-  const [imgUrl, setimgUrl] = useState(`${process.env.REACT_APP_API_URL}/api/File/avatar/${user.imgUrl}`);
+  // const [imgUrl, setimgUrl] = useState(`${process.env.REACT_APP_API_URL}/api/File/${user.imgUrl}`);
+  const [imgUrl, setimgUrl] = useState("");
   const [image, setImage] = useState(imgUrl);
   const [isValid, setIsValid] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -42,12 +43,12 @@ const Account = () => {
   };
 
   const checkValidInput = () => {
-    var bool = (name !== "") && (email !== "") && (phoneNumber !== "" ) && (dateOfBirth !== "") && (uploadAvatar !== null);
+    var bool = (name !== "") && (email !== "") && (phoneNumber !== "" ) && (dateOfBirth !== "") && (uploadAvatar !== null) &&(gender !== "");
     setIsValid(bool);
   }
 
   const updateAccount = async () => {
-    console.log(isValid);
+    // console.log(isValid);
     if (isValid) {
       try {
         const formData = new FormData();
@@ -78,7 +79,7 @@ const Account = () => {
         fetchUserData();
         navigate("/")
       } catch (error) {
-        console.log(error.message);
+        console.log(error);
       }
     }
     else {
@@ -94,13 +95,13 @@ const Account = () => {
         Authorization: `Bearer ${token}`
     };
       const res =await axios.get(`${process.env.REACT_APP_API_URL}/api/File?url=${user.imgUrl}`, {headers,responseType: 'blob'});
-      console.log(res);
+      // console.log(res);
       const blobData = res.data;
       setUploadAvatar(blobData);
       const imageUrl = URL.createObjectURL(blobData);
       setImage(imageUrl);
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
     }
   }
 

@@ -89,27 +89,15 @@ const CategoryView = (props) => {
   };
 
   const fetchTaskCategoryData = async () => {
-    try {
-      console.log(taskList);
-      const notCompletedTasks = taskList.filter(
-        (x) => x.status !== "Completed"
-      );
-      const completedTasks = taskList.filter((x) => x.status === "Completed");
-      setNotCompletedTask(notCompletedTasks);
-      setComPletedTask(completedTasks);
-    } catch (error) {
-      console.log(error);
-    }
+    const notCompletedTasks = taskList.filter((x) => x.status !== "Completed");
+    const completedTasks = taskList.filter((x) => x.status === "Completed");
+    setNotCompletedTask(notCompletedTasks);
+    setComPletedTask(completedTasks);
   };
-  
+
   useEffect(() => {
     fetchTaskCategoryData();
   }, [taskList]);
-
-  const fetchData = () => {
-    fetchTaskData();
-    fetchTaskCategoryData();
-  }
 
   const convertToTaskList = [
     {
@@ -125,7 +113,7 @@ const CategoryView = (props) => {
                 showAddTask(categoryId);
               }}
             >
-              <Task task={task} key={task.id} />
+              <Task task={task} key={task.id} fetchTaskData={fetchTaskData} />
             </div>
           ))}
         </div>
@@ -167,31 +155,33 @@ const CategoryView = (props) => {
         />
         Add Task
       </div>
-      <div style={{marginLeft:"15px"}}>
-      {notCompletedTask
-        .filter((x) => x.categoryId === category.id)
-        .map((task) => (
-          <div
-            key={task.modifiedDate}
-            onClick={() => {
-              setSelectedTask(task);
-              showAddTask(category.id);
-            }}
-          >
-            <Task
-            fetchData={fetchData}
-              task = {task}
-              key={task.id}
-            />
-          </div>
-        ))}
+      <div style={{ marginLeft: "15px" }}>
+        {notCompletedTask
+          .filter((x) => x.categoryId === category.id)
+          .map((task) => (
+            <div
+              key={task.modifiedDate}
+              onClick={() => {
+                setSelectedTask(task);
+                showAddTask(category.id);
+              }}
+            >
+              <Task
+                fetchTaskData={fetchTaskData}
+                // fetchData={fetchData}
+                task={task}
+                key={task.id}
+              />
+            </div>
+          ))}
       </div>
-      {completedTask.length > 0 &&
-      <Collapse
-      items={convertToTaskList}
-      defaultActiveKey={["0"]}
-      className="completed-task-list"
-    />}
+      {completedTask.length > 0 && (
+        <Collapse
+          items={convertToTaskList}
+          defaultActiveKey={["0"]}
+          className="completed-task-list"
+        />
+      )}
       {openAddTask && (
         <TaskView
           showModal={openAddTask}
@@ -200,7 +190,7 @@ const CategoryView = (props) => {
           selectedTask={selectedTask}
           planId={planId}
           fetchTaskData={fetchTaskData}
-          fetchTaskCategoryData = {fetchTaskCategoryData}
+          fetchTaskCategoryData={fetchTaskCategoryData}
         />
       )}
     </div>

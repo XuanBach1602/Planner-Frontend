@@ -7,27 +7,35 @@ import { Dropdown, Space, Select, Button } from "antd";
 import { useParams } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../../UserContext";
 import { DeleteOutlined } from "@ant-design/icons";
+import Group from "../Group/Group";
 
 function Plan() {
-  const { user } = useUser();
   const { id } = useParams();
   const [activeId, setActiveId] = useState(0);
   const [plan, setPlan] = useState({});
-  const [planName, setPLanName] = useState(plan.name);
   const navigate = useNavigate();
   const [setIsPlanUpdate] = useOutletContext();
   const [progress, setProgress] = useState("");
   const [due, setDue] = useState("");
   const [priority, setPriority] = useState("");
+  const [isGroupShow, setIsGroupShow] = useState(false);
+  const [userList, setUserList] = useState([]);
+  const [memberList, setMemberList] = useState([]);
+  let blurFlag = true;
+
   // List of members
-  const memberList = [
-    {
-      label: <div>Nguyen Xuan Bach</div>,
-      key: "0",
-    },
-  ];
+  useEffect(() => {
+    var memberList = userList.map((user) => ({
+      label: <div key={user.id}>
+        <img className="avatars" src={`${process.env.REACT_APP_API_URL}/api/file?url=${user.imgUrl}`} alt="" /> 
+        <span>{user.userName}</span>
+      </div>,
+      key: user.id,
+    }));
+    setMemberList(memberList);
+  },[userList])
+    
 
   const features = [
     { id: 1, name: "Grid", value: "Grid" },
@@ -50,6 +58,22 @@ function Plan() {
     }
   };
 
+  useEffect(() => {
+    const fetchUserData = async() => {
+      if(plan.id !== undefined){
+        try {
+          const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/UserPlan/PlanId/${plan.id}`);
+          // console.log(res.data);
+          setUserList(res.data);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      
+    }
+    fetchUserData();
+  },[plan])
+
   const deletePlan = async () => {
     try {
       const res = await axios.delete(
@@ -63,12 +87,12 @@ function Plan() {
     }
   };
 
-  const updatePlan = async () => {
-    if (planName != null) {
+  const updatePlan = async (e) => {
+    if (e.key === "Enter" && e.target.value != null) {
       try {
         const data = {
           id: id,
-          name: planName,
+          name: e.target.value,
           isPrivacy: plan.isPrivacy,
           createdUserId: plan.createdUserId,
         };
@@ -76,6 +100,8 @@ function Plan() {
           `${process.env.REACT_APP_API_URL}/api/plan`,
           data
         );
+        blurFlag = false;
+        e.target.blur();
         fetchPlanData();
         setIsPlanUpdate(true);
         console.log(res);
@@ -124,13 +150,6 @@ function Plan() {
     }
   }, [categoryList, isTaskUpdate]);
 
-  const setPlanInput = (e) => {
-    if (e.key === "Enter") {
-      updatePlan(id);
-      e.currentTarget.blur();
-    }
-  };
-
   useEffect(() => {
     fetchPlanData();
   }, [id]);
@@ -159,7 +178,7 @@ function Plan() {
     setDue("");
     setPriority("");
     setProgress("");
-  }
+  };
 
   const optionsByFilterType = [
     {
@@ -172,7 +191,7 @@ function Plan() {
         { value: "Future", label: "Future" },
         { value: "", label: "None" },
       ],
-      defaultValue:due,
+      defaultValue: due,
       handleChange: (value) => setDue(value),
     },
     {
@@ -185,7 +204,7 @@ function Plan() {
         { value: "Urgent", label: "Urgent" },
         { value: "", label: "None" },
       ],
-      defaultValue:priority,
+      defaultValue: priority,
       handleChange: (value) => setPriority(value),
     },
     {
@@ -197,7 +216,7 @@ function Plan() {
         { value: "Completed", label: "Completed" },
         { value: "", label: "None" },
       ],
-      defaultValue:progress,
+      defaultValue: progress,
       handleChange: (value) => setProgress(value),
     },
   ];
@@ -206,9 +225,17 @@ function Plan() {
     {
       label: (
         <div onClick={(e) => e.stopPropagation()}>
-          <div style={{display:"flex",height:"25px",justifyContent:'space-between'}}>
+          <div
+            style={{
+              display: "flex",
+              height: "25px",
+              justifyContent: "space-between",
+            }}
+          >
             <h4>Filter</h4>
-            <span style={{color:'#83FB3F'}} onClick={() => clearFilter()} >Clear</span>
+            <span style={{ color: "#83FB3F" }} onClick={() => clearFilter()}>
+              Clear
+            </span>
           </div>
           {optionsByFilterType.map((option) => (
             <div key={option.id} style={{ marginBottom: "5px" }}>
@@ -238,17 +265,21 @@ function Plan() {
       <div className="nav-bar">
         <div className="">
           <div className="plan-avatar">
-            {plan.name == null ? "" : plan.name[0]}
+            {plan.name == null ? "" : plan?.name[0]}
           </div>
         </div>
-        {/* <div className="title">{plan.name}</div> */}
         <div className="title">
           <input
+            required
+            pattern=".{1,}"
+            title="Must be at least 1 character"
             type="text"
             defaultValue={plan.name}
             id="plan-name-input"
-            onChange={(e) => setPLanName(e.target.value)}
-            onKeyDown={(e) => setPlanInput(e)}
+            onBlur={(e) => {
+              if (blurFlag) e.target.value = plan.name;
+            }}
+            onKeyDown={(e) => updatePlan(e)}
           />
         </div>
         <div className="features">
@@ -266,13 +297,8 @@ function Plan() {
           ))}
         </div>
 
-        <img
-          className="avatars"
-          src="https://i0.wp.com/thatnhucuocsong.com.vn/wp-content/uploads/2022/09/avatar-doremon-1.jpg?ssl=1"
-          alt=""
-        />
-        <div>{user.name}</div>
-        <div className="Members member-dropdown">
+        {/* Member dropdown */}
+        <div className="Members member-dropdown hover-box">
           <Dropdown
             menu={{
               items: memberList,
@@ -287,7 +313,9 @@ function Plan() {
             </a>
           </Dropdown>
         </div>
-        <div className="Filters">
+
+        {/* Filter dropdown */}
+        <div className="Filters hover-box">
           <Dropdown
             menu={{
               items: filterItems,
@@ -296,7 +324,7 @@ function Plan() {
             placement="bottom"
           >
             <a onClick={(e) => e.preventDefault()}>
-              <Space style={{ color: "black" }}>
+              <Space style={{ color: "black", padding: "5px" }}>
                 Filter
                 <DownOutlined />
               </Space>
@@ -304,12 +332,23 @@ function Plan() {
           </Dropdown>
         </div>
 
-        <div className="m-3 delete-plan-icon" onClick={() => deletePlan()}>
+        {/* Manage group */}
+        <div
+          className="hover-box"
+          style={{ marginLeft: "10px", padding: "5px" }}
+          onClick={() => setIsGroupShow(true)}
+        >
+          Manage group
+        </div>
+
+        <div className=" delete-plan-icon" onClick={() => deletePlan()}>
           {" "}
           <DeleteOutlined />
         </div>
       </div>
       <hr style={{ margin: 0 }} />
+
+      {/* Switch page */}
       <div className="switch-page">
         {/* <Board /> */}
         <Outlet
@@ -321,6 +360,17 @@ function Plan() {
             fetchTaskData,
           ]}
         />
+
+        {/* Group */}
+        {isGroupShow && (
+          <Group
+            className="group-box"
+            userList={userList}
+            setIsGroupShow={setIsGroupShow}
+            plan={plan}
+            fetchPlanData={fetchPlanData}
+          />
+        )}
       </div>
     </div>
   );
