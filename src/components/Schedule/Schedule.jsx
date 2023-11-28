@@ -1,14 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import "./Schedule.css";
 import TaskView from "../TaskView/TaskView";
 import { Badge, Calendar } from "antd";
 import moment from "moment/moment";
-import { useOutletContext } from "react-router-dom";
-import axios from "axios";
+import PlanContext from "../../PlanContext";
 
 
 const Schedule = () => {
-  const [planId,categoryList,taskList, fetchCategoryData, fetchTaskData] = useOutletContext();
+  const {
+    id:planId,
+    categoryList,
+    taskList,
+    fetchCategoryData,
+    fetchTaskData,
+    currentUser,
+  } = useContext(PlanContext)
   const [openAddTask, setOpenAddTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
@@ -35,11 +41,12 @@ const Schedule = () => {
           const taskStartDate = moment(task.startDate);
           //
           let status = "success";
-          if (taskdueDate > now) {
-            status = "error";
-          } else if (taskdueDate > now.clone().subtract(7, "days")) {
-            status = "warning";
+          if(task.status === "In progress"){
+            if(taskdueDate < now) status = "error ";
+            else if(taskdueDate > now.clone().subtract(7, "days")) status = "warning";
+            else status = "processing"
           }
+          if(task.status === "Not started") status = "default";
 
           const isStartDate = taskStartDate.isSame(currentDate, "day");
           const isEndDate = taskdueDate.isSame(currentDate, "day");

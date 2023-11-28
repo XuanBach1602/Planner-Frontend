@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState} from "react";
 import { useOutletContext } from "react-router-dom";
 import "./Plan.css";
 import axios from "axios";
@@ -9,33 +9,46 @@ import { Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { DeleteOutlined } from "@ant-design/icons";
 import Group from "../Group/Group";
+import { useUser } from "../../UserContext";
+import PlanContext from "../../PlanContext";
 
 function Plan() {
+  const { user } = useUser();
   const { id } = useParams();
-  const [activeId, setActiveId] = useState(0);
+  const [activeId, setActiveId] = useState(1);
   const [plan, setPlan] = useState({});
   const navigate = useNavigate();
-  const [setIsPlanUpdate] = useOutletContext();
+  const [fetchPlanList, connectionRef] = useOutletContext();
+  //Filter
   const [progress, setProgress] = useState("");
   const [due, setDue] = useState("");
   const [priority, setPriority] = useState("");
+
   const [isGroupShow, setIsGroupShow] = useState(false);
   const [userList, setUserList] = useState([]);
   const [memberList, setMemberList] = useState([]);
+  const [currentUser, setCurrentUser] = useState();
+  const [leader, setLeader] = useState();
+  const [isReadOnly, setIsReadOnly] = useState(false);
   let blurFlag = true;
 
   // List of members
   useEffect(() => {
     var memberList = userList.map((user) => ({
-      label: <div key={user.id}>
-        <img className="avatars" src={`${process.env.REACT_APP_API_URL}/api/file?url=${user.imgUrl}`} alt="" /> 
-        <span>{user.userName}</span>
-      </div>,
+      label: (
+        <div key={user.id}>
+          <img
+            className="avatars"
+            src={`${process.env.REACT_APP_API_URL}/api/file?url=${user.imgUrl}`}
+            alt=""
+          />
+          <span>{user.userName}</span>
+        </div>
+      ),
       key: user.id,
     }));
     setMemberList(memberList);
-  },[userList])
-    
+  }, [userList]);
 
   const features = [
     { id: 1, name: "Grid", value: "Grid" },
@@ -58,21 +71,25 @@ function Plan() {
     }
   };
 
-  useEffect(() => {
-    const fetchUserData = async() => {
-      if(plan.id !== undefined){
-        try {
-          const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/UserPlan/PlanId/${plan.id}`);
-          // console.log(res.data);
-          setUserList(res.data);
-        } catch (error) {
-          console.log(error);
-        }
-      }
-      
+  const fetchUserData = async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/UserPlan/PlanId/${id}`
+      );
+      const userData = res.data;
+      const currentUser = userData.find((x) => x.userId === user.id);
+      const leader = userData.find(x => x.role === "Leader");
+      setLeader(leader);
+      if(currentUser.role === "Member") setIsReadOnly(true);
+      setCurrentUser(currentUser);
+      setUserList(userData);
+    } catch (error) {
+      console.log(error);
     }
+  };
+  useEffect(() => {
     fetchUserData();
-  },[plan])
+  }, [id]);
 
   const deletePlan = async () => {
     try {
@@ -80,7 +97,7 @@ function Plan() {
         `${process.env.REACT_APP_API_URL}/api/plan?id=${id}`
       );
       console.log(res);
-      setIsPlanUpdate(true);
+      fetchPlanList();
       navigate("/");
     } catch (error) {
       console.log(error);
@@ -103,7 +120,7 @@ function Plan() {
         blurFlag = false;
         e.target.blur();
         fetchPlanData();
-        setIsPlanUpdate(true);
+        fetchPlanList();
         console.log(res);
       } catch (error) {
         console.log(error);
@@ -114,7 +131,6 @@ function Plan() {
   //Dang test
   const [categoryList, setCategoryList] = useState([]);
   const [taskList, setTaskList] = useState([]);
-  const [isTaskUpdate, setIsTaskUpdate] = useState(false);
   const fetchCategoryData = async () => {
     try {
       const res = await axios.get(
@@ -132,8 +148,11 @@ function Plan() {
       const res = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/worktask/GetByPlanID/${id}`
       );
+      const tasks = res.data;
+      const filteredTask = tasks.filter(x => !x.isPrivate || x.createdUserId === user.id || currentUser?.role === "Leader" || 
+      currentUser?.role === "Deputy Leader");
 
-      setTaskList(res.data);
+      setTaskList(filteredTask);
     } catch (error) {
       console.log(error);
     }
@@ -144,14 +163,12 @@ function Plan() {
   }, [id]);
 
   useEffect(() => {
-    if (categoryList.length > 0) {
-      fetchTaskData();
-      setIsTaskUpdate(false);
-    }
-  }, [categoryList, isTaskUpdate]);
+    fetchTaskData();
+  }, [categoryList,currentUser]);
 
   useEffect(() => {
     fetchPlanData();
+    setIsReadOnly(false);
   }, [id]);
 
   //Filter
@@ -261,18 +278,18 @@ function Plan() {
   ];
 
   return (
-    <div className="plan-page">
+    <div className={`plan-page  ${isReadOnly ? "readonly" : ""}`}>
       <div className="nav-bar">
         <div className="">
-          <div className="plan-avatar">
+          <div className="plan-avatar" >
             {plan.name == null ? "" : plan?.name[0]}
           </div>
         </div>
-        <div className="title">
+        <div className="title" title={plan.name}>
           <input
             required
             pattern=".{1,}"
-            title="Must be at least 1 character"
+            title={plan.name}
             type="text"
             defaultValue={plan.name}
             id="plan-name-input"
@@ -341,25 +358,41 @@ function Plan() {
           Manage group
         </div>
 
-        <div className=" delete-plan-icon" onClick={() => deletePlan()}>
-          {" "}
-          <DeleteOutlined />
-        </div>
+        {currentUser?.role === "Leader" && (
+          <div className=" delete-plan-icon" onClick={() => deletePlan()}>
+            {" "}
+            <DeleteOutlined />
+          </div>
+        )}
       </div>
       <hr style={{ margin: 0 }} />
 
       {/* Switch page */}
       <div className="switch-page">
         {/* <Board /> */}
-        <Outlet
-          context={[
+        <PlanContext.Provider
+          value={{
             id,
             categoryList,
             taskList,
             fetchCategoryData,
             fetchTaskData,
-          ]}
-        />
+            currentUser,
+            userList,
+            leader
+          }}
+        >
+          <Outlet
+            context={[
+              id,
+              categoryList,
+              taskList,
+              fetchCategoryData,
+              fetchTaskData,
+              leader
+            ]}
+          />
+        </PlanContext.Provider>
 
         {/* Group */}
         {isGroupShow && (
@@ -368,7 +401,11 @@ function Plan() {
             userList={userList}
             setIsGroupShow={setIsGroupShow}
             plan={plan}
-            fetchPlanData={fetchPlanData}
+            fetchUserData={fetchUserData}
+            connectionRef={connectionRef}
+            currentUser={currentUser}
+            fetchPlanList={fetchPlanList}
+            
           />
         )}
       </div>

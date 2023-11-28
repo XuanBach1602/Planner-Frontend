@@ -15,6 +15,10 @@ import { Dropdown, Space } from "antd";
 import Notification from "../components/Notification/Notification";
 import AddPlan from "../components/AddPlan/AddPlan";
 import { DownOutlined } from "@ant-design/icons";
+import ConnectToNotificationHub from "../ConnectToNotificationHub";
+import TaskView from "../components/TaskView/TaskView";
+import { Preview } from "@mui/icons-material";
+import PreviewTask from "../components/TaskView/PreviewTask";
 
 function MainLayout() {
   const { user, setUser, setIsAuthenticated } = useUser();
@@ -27,6 +31,17 @@ function MainLayout() {
   const [notificationList, setNotificationList] = useState();
   const [notificationItems, setNotificationItems] = useState([]);
   const [notSeenNotify, setNotSeenNotify] = useState(0);
+  const [connectionRef, setConnectionRef] = useState();
+  const [previewTask, setPreviewTask] = useState();
+  const [openAddTask, setOpenAddTask] = useState(false);
+
+  const showAddTask = () => {
+    setOpenAddTask(true);
+  };
+
+  const hideAddTask = () => {
+    setOpenAddTask(false);
+  };
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -60,12 +75,11 @@ function MainLayout() {
     fetchAvatar();
   }, [user]);
 
-  const fetchPlanData = async () => {
+  const fetchPlanList = async () => {
     try {
       const res = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/plan/GetByUserID/${user.id}`
       );
-      // console.log(res);
       setPlanList(res.data);
     } catch (error) {
       console.log(error);
@@ -88,11 +102,6 @@ function MainLayout() {
 
   useEffect(() => fetchNotificationData, [user.id]);
 
-  const text = `
-  A dog is a type of domesticated animal.
-  Known for its loyalty and faithfulness,
-  it can be found as a welcome guest in many households across the world.
-`;
   const items = [
     {
       key: "1",
@@ -125,18 +134,24 @@ function MainLayout() {
     if (notificationList !== undefined && notificationList.length > 0) {
       const notifications = notificationList.map((notification) => ({
         key: notification.id,
-        label: 
-          <div onClick={(e) => e.stopPropagation()} key={notification.id} >
-            <Notification fetchNotificationData={fetchNotificationData} notification={notification} />
+        label: (
+          <div onClick={(e) => e.stopPropagation()} key={notification.id}>
+            <Notification
+              setPreviewTask={setPreviewTask}
+              fetchNotificationData={fetchNotificationData}
+              fetchPlanList={fetchPlanList}
+              notification={notification}
+              showAddTask={showAddTask}
+            />
           </div>
-        ,
+        ),
       }));
       setNotificationItems(notifications);
     }
   }, [notificationList]);
 
   useEffect(() => {
-    fetchPlanData();
+    fetchPlanList();
     setIsPlanUpdate(false);
   }, [isPlanUpdate]);
 
@@ -163,6 +178,16 @@ function MainLayout() {
     },
   ];
 
+  //Test signal
+  useEffect(() => {
+    const userId = user.id; // Thay đổi userId tùy theo người dùng cần nhắn tin
+    var connection = ConnectToNotificationHub(userId);
+    setConnectionRef(connection);
+    connection.on("ReceiveMessage", (notification) => {
+      fetchNotificationData();
+    });
+  }, []);
+
   return (
     <div
       className="main"
@@ -181,12 +206,14 @@ function MainLayout() {
               className="notification-dropdown"
               overlayClassName="notification-item"
             >
-              <div style={{ cursor: "pointer", position:"relative" }} >
+              <div style={{ cursor: "pointer", position: "relative" }}>
                 <Space>
-                  <span style={{ position: "absolute", top: "-5px", right:'-5px' }}>
+                  <span
+                    style={{ position: "absolute", top: "-5px", right: "-5px" }}
+                  >
                     {notSeenNotify}
                   </span>
-                  <NotificationsIcon style={{color:'#79ECEE'}} />
+                  <NotificationsIcon style={{ color: "#79ECEE" }} />
                 </Space>
               </div>
             </Dropdown>
@@ -231,11 +258,11 @@ function MainLayout() {
             ☰
           </button>
           <div className="menu-item" onClick={() => setOpen(true)}>
-            <AddIcon /> New plan
+            <AddIcon titleAccess="New plan" /> New plan
           </div>
 
           <div className="menu-item" onClick={() => navigate("/")}>
-            <HomeIcon /> Hub
+            <HomeIcon titleAccess="Home" /> Home
           </div>
           <div className="menu-item">
             <PersonOutlineIcon /> Assigned to me
@@ -248,13 +275,21 @@ function MainLayout() {
         </div>
         {/* <div style={{ height: "580px", borderLeft: "1px solid black" }}></div> */}
         <div className="content">
-          <Outlet context={[setIsPlanUpdate]} />
+          <Outlet context={[fetchPlanList, connectionRef]} />
         </div>
       </div>
 
       {/* Add plan */}
       {open && (
-        <AddPlan fetchPlanData={fetchPlanData} setOpen={setOpen} open={open} />
+        <AddPlan fetchPlanList={fetchPlanList} setOpen={setOpen} open={open} />
+      )}
+
+      {openAddTask && (
+        <PreviewTask
+          selectedTask={previewTask}
+          showModal={openAddTask}
+          hideModal={hideAddTask}
+        />
       )}
     </div>
   );

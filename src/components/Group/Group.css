@@ -25,6 +25,12 @@
     align-items: center;
 }
 
+.member-list {
+    height: 250px; 
+    /* max-height: 280px;  */
+    overflow-y: scroll;
+}
+
 
 .member-avatar {
     font-weight: 350;
@@ -53,4 +59,11 @@
     cursor: pointer;
     background-color: #B7C6AE;
 }
+
+.completed-message {
+    white-space: nowrap; /* Ngăn chữ tràn xuống dòng mới */
+    overflow: hidden; /* Ẩn phần vượt quá khu vực hiển thị */
+    text-overflow: ellipsis; /* Hiển thị dấu ... khi vượt quá chiều rộng */
+  }
+  
 

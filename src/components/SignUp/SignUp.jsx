@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Input, Form, Button } from "antd";
+import { toast } from "react-toastify";
+// import { Toast } from "react-toastify/dist/components";
 import "./SignUp.css";
 const SignUp = () => {
   const [name, setName] = useState("");
@@ -13,50 +15,80 @@ const SignUp = () => {
   const [validationMessage, setValidationMessage] = useState("");
   const navigate = useNavigate();
 
-  const CheckValidInput = () => {
+  const validateEmail = (input) => {
+    // Regular expression for basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(input);
+  };
+
+  const checkEmptyInput = () => {
     let bool =
       phoneNumber !== "" &&
       name !== "" &&
       email !== "" &&
       password !== "" &&
       passwordComfirm !== "" &&
-      passwordComfirm === password;
+      passwordComfirm !== "";
     setIsValidInput(bool);
   };
 
   const SignUp = async () => {
-    console.log(isValidInput);
+    // console.log(isValidInput);
     console.log(name, email, password, passwordComfirm, phoneNumber);
-    if (isValidInput) {
-      try {
-        const formData = new FormData();
-        formData.append("name", name);
-        formData.append("email", email);
-        formData.append("password", password);
-        formData.append("phoneNumber", phoneNumber);
-        var res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/SignUp`, formData,
+    if (!isValidInput) {
+      setValidationMessage("Please fill in form");
+      return;
+    }
+
+    if (password.length < 8) {
+      setValidationMessage("Password must have atleast 8 characters");
+      return;
+    }
+
+    if (password !== passwordComfirm) {
+      setValidationMessage("Confirm password and password must be the same");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setValidationMessage("Email is not in correct format");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("phoneNumber", phoneNumber);
+      var res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/auth/SignUp`,
+        formData,
         {
-          headers:{
+          headers: {
             "Content-Type": "multipart/form-data",
-          }
-        });
-        setValidationMessage("");
+          },
+        }
+      );
+      setValidationMessage("");
+      toast.success("Create a new accout successfully",{
+        autoClose:1000,
+      });
+      setTimeout(() => {
         navigate("/signin");
-        console.log(res);
-      } catch (error) {
-        console.log(error);
-          // const data  = error.response.data.join(", ");
-          // setValidationMessage(data); // Lưu thông báo lỗi vào state
-        // console.log(error.response.data);
-        // setValidationMessage("Email is already taken");
-      }
-    } else {
-      setValidationMessage("Please fill full in form");
+      }, 1000);
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+      // const data  = error.response.data.join(", ");
+      // setValidationMessage(data); // Lưu thông báo lỗi vào state
+      // console.log(error.response.data);
+       setValidationMessage(error.response.data.join(","));
     }
   };
 
   useEffect(
-    () => CheckValidInput(),
+    () => checkEmptyInput(),
     [name, email, password, passwordComfirm, phoneNumber]
   );
   return (
@@ -100,7 +132,7 @@ const SignUp = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please fill password!",
+                  message: "Please fill password! (At least 8 characters)",
                 },
               ]}
             >
@@ -137,7 +169,7 @@ const SignUp = () => {
               ]}
             >
               <Input
-              type="number"
+                type="number"
                 className="data-input"
                 placeholder="Fill your phone number"
                 onChange={(e) => setPhoneNumber(e.target.value)}

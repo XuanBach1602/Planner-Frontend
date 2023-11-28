@@ -1,14 +1,16 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Collapse } from "antd";
 import Task from "../Task/Task";
 import TaskView from "../TaskView/TaskView";
+import PlanContext from "../../PlanContext";
 const CategoryView = (props) => {
   const category = props.category;
-  const fetchCategoryData = props.fetchCategoryData;
-  const fetchTaskData = props.fetchTaskData;
-  const taskList = props.taskList;
+  // const fetchCategoryData = props.fetchCategoryData;
+  // const fetchTaskData = props.fetchTaskData;
+  const {fetchCategoryData, fetchTaskData,currentUser, taskList} = useContext(PlanContext);
+  // const taskList = props.taskList;
   const planId = category.planID;
   const [categoryName, setCategoryName] = useState("");
   const [openAddTask, setOpenAddTask] = useState(false);
@@ -16,6 +18,8 @@ const CategoryView = (props) => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [notCompletedTask, setNotCompletedTask] = useState([]);
   const [completedTask, setComPletedTask] = useState([]);
+  let blurFlag = true;
+
   const showAddTask = (categoryId) => {
     setOpenAddTask(true);
     if (categoryId) setCategoryId(categoryId);
@@ -24,26 +28,6 @@ const CategoryView = (props) => {
   const hideAddTask = () => {
     setOpenAddTask(false);
     setSelectedTask([]);
-  };
-
-  const addNewCategory = async () => {
-    if (categoryName != null) {
-      try {
-        console.log(`PlanID : ${planId}`);
-        const data = {
-          name: categoryName,
-          planId: planId,
-        };
-        const res = await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/Category`,
-          data
-        );
-        fetchCategoryData();
-        // console.log(res);
-      } catch (error) {
-        console.log(error);
-      }
-    }
   };
 
   const deleteCategory = async (id) => {
@@ -58,39 +42,31 @@ const CategoryView = (props) => {
     }
   };
 
-  const updateCategory = async (id) => {
-    if (categoryName != null) {
+  const updateCategory = async (e) => {
+    if (e.key === "Enter" && e.target.value != null) {
       try {
         const data = {
-          id: id,
-          name: categoryName,
+          id: category.id,
+          name: e.target.value,
           planId: planId,
         };
         const res = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/Category`,
           data
         );
+        blurFlag = false;
+        e.target.blur();
         fetchCategoryData();
-        console.log(res);
+        // console.log(res);
       } catch (error) {
         console.log(error);
       }
     }
   };
 
-  const setCategoryInput = (e, categoryId) => {
-    if (e.key === "Enter") {
-      if (categoryId != null) updateCategory(categoryId);
-      else addNewCategory();
-
-      setCategoryName("");
-      e.currentTarget.blur();
-    }
-  };
-
   const fetchTaskCategoryData = async () => {
-    const notCompletedTasks = taskList.filter((x) => x.status !== "Completed");
-    const completedTasks = taskList.filter((x) => x.status === "Completed");
+    const notCompletedTasks = taskList.filter((x) => x.status !== "Completed" && x.categoryId === category.id);
+    const completedTasks = taskList.filter((x) => x.status === "Completed" && x.categoryId === category.id);
     setNotCompletedTask(notCompletedTasks);
     setComPletedTask(completedTasks);
   };
@@ -105,21 +81,24 @@ const CategoryView = (props) => {
       label: <div>Completed &nbsp; &nbsp; {completedTask.length}</div>,
       children: (
         <div>
-          {completedTask.map((task) => (
+          {completedTask
+          .map((task) => (
             <div
               key={task.modifiedDate}
               onClick={() => {
                 setSelectedTask(task);
                 showAddTask(categoryId);
               }}
+              className="task-list"
             >
-              <Task task={task} key={task.id} fetchTaskData={fetchTaskData} />
+              <Task task={task} key={task.id} fetchTaskData={fetchTaskData}/>
             </div>
           ))}
         </div>
       ),
     },
   ];
+
 
   return (
     <div className="category-box" key={category.id}>
@@ -129,9 +108,12 @@ const CategoryView = (props) => {
             type="text"
             className="category-input"
             placeholder="Fill category name"
-            onChange={(e) => setCategoryName(e.target.value)}
-            onKeyDown={(e) => setCategoryInput(e, category.id)}
+            onBlur={(e) => {
+              if (blurFlag) e.target.value = category.name;
+            }}
+            onKeyDown={(e) => updateCategory(e)}
             defaultValue={category.name}
+            readOnly={currentUser?.role === "Member"}
           />
           <DeleteOutlined
             id="delete-category-icon"
@@ -157,7 +139,6 @@ const CategoryView = (props) => {
       </div>
       <div style={{ marginLeft: "15px" }}>
         {notCompletedTask
-          .filter((x) => x.categoryId === category.id)
           .map((task) => (
             <div
               key={task.modifiedDate}
@@ -168,7 +149,6 @@ const CategoryView = (props) => {
             >
               <Task
                 fetchTaskData={fetchTaskData}
-                // fetchData={fetchData}
                 task={task}
                 key={task.id}
               />

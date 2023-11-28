@@ -9,6 +9,11 @@
     position: relative;
 }
 
+.readonly #plan-name-input,
+.readonly .category-input {
+    pointer-events: none;
+}
+
 .plan-page::before {
     content: "";
     display: block;

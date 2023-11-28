@@ -153,4 +153,7 @@
 
 .notification-item .ant-dropdown-menu {
     background-color: #E5E5E5 !important ;
+    max-height: 500px !important;
+    overflow-y: auto;
+
 }

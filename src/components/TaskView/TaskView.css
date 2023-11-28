@@ -6,6 +6,20 @@
     gap: 25px;
 }
 
+
+
+.readonly-input input,
+.readonly-input select,
+.readonly-input textarea,
+.readonly-input .attachment-label,
+.readonly-input .task-selection-item ,
+.readonly-input .assign-box,
+.readonly-input .selection-row,
+.readonly-input #delete-file-icon {
+    pointer-events: none !important;
+}
+
+
 .task-name {
     margin-top: 15px;
     margin-bottom: 10px;
@@ -28,7 +42,7 @@
 
 }
 
-.progress-container {
+.select-container {
     display: grid;
     margin: 10px 0;
     grid-template-columns: 1fr 1fr;
@@ -38,14 +52,19 @@
     margin-left: 0px;
 }
 
-.status-selection {
-    background-color: white;
+.private-box {
+    margin-top: 10px;
+}
+
+.approved-box{
+    margin-top: 10px;
 }
 
 .file-input  {
     margin-top: 15px;
     display: none;
     margin-bottom: 15px;
+    
 }
 
 .attachment-label {

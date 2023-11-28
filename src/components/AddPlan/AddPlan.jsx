@@ -10,7 +10,7 @@ const AddPlan = (props) => {
   const [privacy, setPrivacy] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
   const [isValidInput, setIsValidInput] = useState(false);
-  const fetchPlanData = props.fetchPlanData;
+  const fetchPlanList  = props.fetchPlanList;
   const setOpen = props.setOpen;
   const open = props.open;
   const {user} = useUser();
@@ -38,7 +38,7 @@ const AddPlan = (props) => {
         setValidationMessage("");
         setPrivacy(true);
         setOpen(false);
-        fetchPlanData();
+        fetchPlanList();
       } catch (error) {
         console.log(error);
         setValidationMessage("Please refill in form");

@@ -6,6 +6,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useUser } from "../../UserContext";
 import axios from "axios";
 import { Navigate, useNavigate } from "react-router-dom";
+import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 
 dayjs.extend(customParseFormat);
 const dateFormat = "YYYY-MM-DD";
@@ -113,6 +114,7 @@ const Account = () => {
   return (
     <div className="account-container">
       <div className="account-form">
+        <Button type="primary" onClick={() => navigate(-1)}> <KeyboardBackspaceIcon style={{marginBottom:"2px"}}/>&nbsp;Go back</Button>
         <h2 className="text-center">Account Information</h2>
         <div className="d-flex">
           <Form>

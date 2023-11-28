@@ -31,3 +31,14 @@
 .status-box {
     margin-right: 5px;
 }
+
+.assigned-user-img {
+    width: 25px;
+    height: 25px;
+    border-radius: 100%;
+    margin-left: 10px;
+}
+
+.late {
+    color: red;
+}

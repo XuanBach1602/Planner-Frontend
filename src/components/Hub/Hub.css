@@ -1,28 +1,36 @@
-
 .plan-item-statistical {
-    border:solid 0.5px gray ;
-    padding: 20px;
-    width: 450px;
-    height: 300px;
-    border-radius: 10px;
-    cursor: pointer;
+  border: solid 0.5px gray;
+  padding: 20px;
+  width: 450px;
+  height: 300px;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 .plan-list-display {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
 .hub-container {
-    overflow-y: auto;
-    /* margin: 20px; */
-    margin-left:20px ;
+  overflow-y: auto;
+  /* margin: 20px; */
+  margin-left: 20px;
+  height: 100%;
 }
 
 .plan-avatar-hub {
-    padding: 16px;
-    width: 52px;
-    height: 52px;
-    background-color: rgb(203, 32, 198);
-    margin-right: 10px;
+  padding: 16px;
+  width: 52px;
+  height: 52px;
+  background-color: rgb(203, 32, 198);
+  margin-right: 10px;
+}
+
+.empty-data-circle {
+  width: 100px; /* Điều chỉnh kích thước vòng tròn tùy ý */
+  height: 100px; /* Điều chỉnh kích thước vòng tròn tùy ý */
+  border-radius: 50%; /* Tạo hình dạng vòng tròn */
+  background-color: #e0e0e0; /* Màu nền của vòng tròn */
+  /* Thêm các thuộc tính khác tùy ý để điều chỉnh vòng tròn */
 }

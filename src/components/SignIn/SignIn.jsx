@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import "./SignIn.css";
 import { Input, Form, Button } from "antd";
 import { useUser } from "../../UserContext";
+import { toast } from "react-toastify";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -31,7 +32,12 @@ const SignIn = () => {
         localStorage.setItem("user", JSON.stringify(res.data.userInfo));
         // console.log(res.data.userInfo);
         setValidation("");
-        navigate("/");
+        toast.success("Signin successfully", {
+          autoClose: 1000,
+        });
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
       } catch (error) {
         setValidation("Wrong password or email");
         console.log(error);

@@ -1,12 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./Board.css";
 import axios from "axios";
 import { useOutletContext } from "react-router-dom";
 import CategoryView from "../CategoryView/CategoryView";
+import PlanContext from "../../PlanContext";
 
 const Board = () => {
-  const [planId, categoryList, taskList, fetchCategoryData, fetchTaskData] =
-    useOutletContext();
+  const {
+    id:planId,
+    categoryList,
+    taskList,
+    fetchCategoryData,
+    fetchTaskData,
+    currentUser,
+  } = useContext(PlanContext)
+  // const [planId, categoryList, taskList, fetchCategoryData, fetchTaskData] =
+  //   useOutletContext();
   const [categoryName, setCategoryName] = useState("");
 
   const filterTasksByCategoryID = (categoryId) => {
@@ -74,7 +83,7 @@ const Board = () => {
       <div className="category-box">
         <div className="board">
           <div className="board-item">
-            <input
+            {currentUser?.role !== "Member"  && <input
               type="text"
               className="category-input"
               placeholder="Add new category"
@@ -87,7 +96,7 @@ const Board = () => {
                   e.target.value = "";
                 }
               }}
-            />
+            />}
           </div>
         </div>
       </div>

@@ -116,3 +116,13 @@
 .completed-task-list .ant-collapse-item {
   background-color: transparent !important;
 }
+
+.task-list {
+  pointer-events: none;
+  user-select: none;
+}
+
+.task-list *{
+  pointer-events: auto;
+  user-select: auto;
+}
