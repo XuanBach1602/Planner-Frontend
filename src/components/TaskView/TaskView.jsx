@@ -9,6 +9,7 @@ import { UserAddOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Select, Space } from "antd";
 import { useUser } from "../../UserContext";
 import PlanContext from "../../PlanContext";
+import { toast } from "react-toastify";
 dayjs.extend(customParseFormat);
 
 const TaskView = (props) => {
@@ -176,7 +177,7 @@ const TaskView = (props) => {
         formData.append("createdUserID", user.id);
         formData.append("assignedUserID", assignedUserId);
         formData.append("isPrivate", task.isPrivate);
-        formData.append("completedUserID",completedUserId);
+        if(task.status === "Completed") formData.append("completedUserID",currentUser.userId);
         formData.append("isApproved",task.isApproved);
         formData.append("isUpdateTask", false);
         if (uploadFiles && uploadFiles.length > 0) {
@@ -249,8 +250,28 @@ const TaskView = (props) => {
             },
           }
         );
-        console.log(res);
+        if(currentUser.role !== "Leader")
+        try {
+          const data = {
+            title: "Task update notification",
+            receivedUserId: leader.userId,
+            sendedUserId: user.id,
+            status: "Not responsed",
+            isSeen: false,
+            planId: planId,
+            workTaskId: selectedTask.id
+          };
+          const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/Notification`,data);
+          toast.info("Update the task successfully", {
+            autoClose:1000,
+          })
+          console.log(res);
+        } catch (error) {
+          console.log(error);
+        }
+        // console.log(res);
         setErrorMessage("");
+
         fetchTaskData();
         if (fetchTaskCategoryData) fetchTaskCategoryData();
         hideModal();
@@ -289,7 +310,7 @@ const TaskView = (props) => {
         formData.append("priority", task.priority);
         formData.append("startDate", task.startDate);
         formData.append("dueDate", task.dueDate);
-        formData.append("categoryID", categoryId);
+        formData.append("categoryID", selectedTask.categoryId);
         formData.append("planID", planId);
         formData.append("createdUserID", user.id);
         formData.append("assignedUserID", assignedUserId);
@@ -318,7 +339,7 @@ const TaskView = (props) => {
         const worktask = res.data;
         try {
           const data = {
-            title: "Update task",
+            title: "Task update request",
             receivedUserId: leader.userId,
             sendedUserId: user.id,
             status: "Not responsed",
@@ -327,14 +348,17 @@ const TaskView = (props) => {
             workTaskId: worktask.id
           };
           const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/Notification`,data);
+          toast.info("Sended request to leader", {
+            autoClose:1000,
+          })
           console.log(res);
         } catch (error) {
           console.log(error);
         }
         setErrorMessage("");
         // setIsTaskUpdate(true);
-        fetchTaskData();
-        fetchTaskCategoryData();
+        // fetchTaskData();
+        // fetchTaskCategoryData();
         hideModal();
         // clearData();
       } catch (error) {
@@ -351,7 +375,7 @@ const TaskView = (props) => {
     { label: "Select an option", value: "" }, // Lựa chọn trống
     ...userList.map((user) => ({
       label: (
-        <div key={user.id} className="hover-box">
+        <div key={user.id} className="hover-box" title={user.userName}>
           <img
             className="avatars"
             src={`${process.env.REACT_APP_API_URL}/api/file?url=${user.imgUrl}`}
@@ -374,7 +398,7 @@ const TaskView = (props) => {
       centered
       maskClosable={false}
       open={showModal}
-      onOk={() => (selectedTask === null ? addNewTask() : currentUser.role === "Leader"?updateTask() : addUpdatedVersion())}
+      onOk={() => (selectedTask === null ? addNewTask() : (currentUser.role === "Leader"|| !selectedTask.isApproved) ?updateTask() : addUpdatedVersion())}
       onCancel={() => hideModal()}
       okText={
         selectedTask === null

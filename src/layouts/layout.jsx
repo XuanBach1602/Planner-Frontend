@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./layout.css";
@@ -16,8 +16,6 @@ import Notification from "../components/Notification/Notification";
 import AddPlan from "../components/AddPlan/AddPlan";
 import { DownOutlined } from "@ant-design/icons";
 import ConnectToNotificationHub from "../ConnectToNotificationHub";
-import TaskView from "../components/TaskView/TaskView";
-import { Preview } from "@mui/icons-material";
 import PreviewTask from "../components/TaskView/PreviewTask";
 
 function MainLayout() {
@@ -34,7 +32,7 @@ function MainLayout() {
   const [connectionRef, setConnectionRef] = useState();
   const [previewTask, setPreviewTask] = useState();
   const [openAddTask, setOpenAddTask] = useState(false);
-
+  const [fetchTaskData, setFetchTaskData] = useState(null);
   const showAddTask = () => {
     setOpenAddTask(true);
   };
@@ -123,11 +121,6 @@ function MainLayout() {
         </div>
       ),
     },
-    // {
-    //   key: "2",
-    //   label: "All",
-    //   children: <p>{text}</p>,
-    // },
   ];
 
   useEffect(() => {
@@ -137,6 +130,7 @@ function MainLayout() {
         label: (
           <div onClick={(e) => e.stopPropagation()} key={notification.id}>
             <Notification
+              fetchTaskData = {fetchTaskData}
               setPreviewTask={setPreviewTask}
               fetchNotificationData={fetchNotificationData}
               fetchPlanList={fetchPlanList}
@@ -219,9 +213,9 @@ function MainLayout() {
             </Dropdown>
           </div>
 
-          <div className="setting">
+          {/* <div className="setting">
             <SettingsIcon />
-          </div>
+          </div> */}
           <div className="account">
             <Dropdown
               menu={{
@@ -264,9 +258,9 @@ function MainLayout() {
           <div className="menu-item" onClick={() => navigate("/")}>
             <HomeIcon titleAccess="Home" /> Home
           </div>
-          <div className="menu-item">
+          {/* <div className="menu-item">
             <PersonOutlineIcon /> Assigned to me
-          </div>
+          </div> */}
           <Collapse
             items={items}
             defaultActiveKey={["0"]}
@@ -275,7 +269,7 @@ function MainLayout() {
         </div>
         {/* <div style={{ height: "580px", borderLeft: "1px solid black" }}></div> */}
         <div className="content">
-          <Outlet context={[fetchPlanList, connectionRef]} />
+          <Outlet context={[fetchPlanList, connectionRef, setFetchTaskData]} />
         </div>
       </div>
 

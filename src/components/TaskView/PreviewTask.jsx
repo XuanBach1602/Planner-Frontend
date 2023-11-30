@@ -14,7 +14,6 @@ const PreviewTask = (props) => {
   const selectedTask = props.selectedTask;
   const showModal = props.showModal;
   const hideModal = props.hideModal;
-  const [isReadOnly, setIsReadOnly] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploadFiles, setUploadFiles] = useState([]);
   const [completedUserId, setCompletedUserId] = useState("");
@@ -127,15 +126,16 @@ const PreviewTask = (props) => {
 
   useEffect(() => {
     const fetchUserList = async() => {
-      console.log(selectedTask);
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/UserPlan/PlanId/${selectedTask.planId}`
-        );
-        setUserList(res.data);
-        console.log(res.data);
-      } catch (error) {
-        console.log(error);
+      if(selectedTask){
+        try {
+          const res = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/UserPlan/PlanId/${selectedTask?.planId}`
+          );
+          setUserList(res.data);
+          console.log(res.data);
+        } catch (error) {
+          console.log(error);
+        }
       }
     }
     fetchUserList();

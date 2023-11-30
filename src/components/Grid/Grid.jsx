@@ -14,19 +14,19 @@ import PlanContext from "../../PlanContext";
 
 const Grid = () => {
   const {
-    id:planId,
+    id: planId,
     taskList,
     fetchTaskData,
     currentUser,
-  } = useContext(PlanContext)
-  // const [planId, categoryList, taskList, fetchCategoryData, fetchTaskData] =
-  //   useOutletContext();
+    userList,
+  } = useContext(PlanContext);
 
   const [openAddTask, setOpenAddTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [tasks, setTasks] = useState([]);
+  let isCheckBoxClicked = true;
   const showAddTask = () => {
-    setOpenAddTask(true);
+setOpenAddTask(true);
     // console.log(openAddTask);
   };
 
@@ -41,6 +41,7 @@ const Grid = () => {
   };
 
   const updateStatus = async (e, id, status) => {
+    console.log(isCheckBoxClicked);
     e.stopPropagation();
     try {
       const data = {
@@ -53,6 +54,7 @@ const Grid = () => {
       );
       // console.log(res.data);
       fetchTaskData();
+      isCheckBoxClicked = false;
     } catch (error) {
       console.log(error);
     }
@@ -64,13 +66,13 @@ const Grid = () => {
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
-              <TableCell align="right">Title</TableCell>
-              <TableCell align="right">Assignment</TableCell>
-              <TableCell align="right">Start Date</TableCell>
-              <TableCell align="right">Due Date</TableCell>
-              <TableCell align="right">Category</TableCell>
-              <TableCell align="right">Status</TableCell>
-              <TableCell align="right">Priority</TableCell>
+              <TableCell align="left">Title</TableCell>
+              <TableCell align="left">Assignment</TableCell>
+              <TableCell align="left">Start Date</TableCell>
+              <TableCell align="left">Due Date</TableCell>
+              <TableCell align="left">Category</TableCell>
+              <TableCell align="left">Status</TableCell>
+              <TableCell align="left">Priority</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -84,19 +86,43 @@ const Grid = () => {
                 }}
               >
                 <TableCell component="th" scope="row">
-                  <input
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <input
                     type="checkbox"
-                    checked={task.status === "Completed" ? true : false}
-                    onClick={(e) => updateStatus(e, task.id, task.status)}
+                    checked={task.status === "Completed"}
+                    onChange={(e) => {
+                      updateStatus(e, task.id, task.status);
+                    }}
                   />
+                  </div>
                 </TableCell>
-                <TableCell align="right">{task.name}</TableCell>
-                <TableCell align="right">{task.assignment}</TableCell>
-                <TableCell align="right">{task.startDate}</TableCell>
-                <TableCell align="right">{task.dueDate}</TableCell>
-                <TableCell align="right">{task.categoryName}</TableCell>
-                <TableCell align="right">{task.status}</TableCell>
-                <TableCell align="right">{task.priority}</TableCell>
+                <TableCell align="left">{task.name}</TableCell>
+                <TableCell align="left">
+                  {(() => {
+                    const assignedUser = userList.find(
+                      (x) => x.userId === task.assignedUserId
+                    );
+                    if (assignedUser) {
+                      return (
+                        <div className="hover-box">
+                          <img
+                            className="avatars"
+                            src={`${process.env.REACT_APP_API_URL}/api/file?url=${assignedUser.imgUrl}`}
+                            alt=""
+                          />
+                          <span>{assignedUser.userName}</span>
+                        </div>
+                      );
+                    }
+                    return null; // Handling case where assignedUser is not found
+                  })()}
+                </TableCell>
+
+                <TableCell align="left">{task.startDate}</TableCell>
+                <TableCell align="left">{task.dueDate}</TableCell>
+                <TableCell align="left">{task.categoryName}</TableCell>
+                <TableCell align="left">{task.status}</TableCell>
+                <TableCell align="left">{task.priority}</TableCell>
               </TableRow>
             ))}
           </TableBody>

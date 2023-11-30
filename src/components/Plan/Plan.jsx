@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from "react";
+import React, { forwardRef, useEffect, useState, useRef, useImperativeHandle} from "react";
 import { useOutletContext } from "react-router-dom";
 import "./Plan.css";
 import axios from "axios";
@@ -12,13 +12,13 @@ import Group from "../Group/Group";
 import { useUser } from "../../UserContext";
 import PlanContext from "../../PlanContext";
 
-function Plan() {
+const Plan = () => {
   const { user } = useUser();
   const { id } = useParams();
-  const [activeId, setActiveId] = useState(1);
+  const [activeId, setActiveId] = useState();
   const [plan, setPlan] = useState({});
   const navigate = useNavigate();
-  const [fetchPlanList, connectionRef] = useOutletContext();
+  const [fetchPlanList, connectionRef, setFetchTaskData] = useOutletContext();
   //Filter
   const [progress, setProgress] = useState("");
   const [due, setDue] = useState("");
@@ -57,6 +57,7 @@ function Plan() {
   ];
   const handleFeatureClick = (id) => {
     setActiveId(id);
+
   };
 
   const fetchPlanData = async () => {
@@ -151,7 +152,7 @@ function Plan() {
       const tasks = res.data;
       const filteredTask = tasks.filter(x => !x.isPrivate || x.createdUserId === user.id || currentUser?.role === "Leader" || 
       currentUser?.role === "Deputy Leader");
-
+      // console.log("Fetch task");
       setTaskList(filteredTask);
     } catch (error) {
       console.log(error);
@@ -159,15 +160,19 @@ function Plan() {
   };
 
   useEffect(() => {
-    fetchCategoryData();
-  }, [id]);
-
-  useEffect(() => {
     fetchTaskData();
   }, [categoryList,currentUser]);
 
   useEffect(() => {
+    const path = window.location.pathname;
+    if(path.includes("Grid","grid")) setActiveId(1);
+    else if(path.includes("Schedule","schedule")) setActiveId(3);
+    else setActiveId(2);
+  },[id])
+  useEffect(() => {
     fetchPlanData();
+    fetchCategoryData();
+    setFetchTaskData(() => fetchTaskData);
     setIsReadOnly(false);
   }, [id]);
 

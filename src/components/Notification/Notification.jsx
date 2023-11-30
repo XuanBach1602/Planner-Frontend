@@ -4,6 +4,7 @@ import { Button } from "antd";
 import axios from "axios";
 
 const Notification = (props) => {
+  const fetchTaskData =  props.fetchTaskData;
   const showAddTask = props.showAddTask;
   const setPreviewTask = props.setPreviewTask;
   const [notification, setNotification] = useState(props.notification);
@@ -48,8 +49,10 @@ const Notification = (props) => {
         null,
         { params: { status } }
       );
-      console.log(res);
+      // console.log(res);
       fetchNotificationData();
+      if(fetchTaskData)fetchTaskData();
+      // console.log(typeof(fetchTaskData))
       if (status === "Accepted") fetchPlanList();
     } catch (error) {
       console.log(error);
@@ -147,7 +150,7 @@ const Notification = (props) => {
           </div>
       </div>
       }
-      {notification.title === "Update task" &&
+      {notification.title === "Task update request" &&
         <div
         className={`notification-container ${
           notification.isSeen ? "" : "not-seen"
@@ -166,7 +169,7 @@ const Notification = (props) => {
               in <span className="bold-letter">
                 {notification.planName} &nbsp;
               </span>
-            at {convertTime(notification.createdTime)}. {notification.status === "Not responsed" &&<a onClick={() => showPreviewTask()}>Preview this task</a>}
+            at {convertTime(notification.createdTime)}. {notification.status === "Not responsed" &&<a style={{fontWeight:'500'}} onClick={() => showPreviewTask()}>Preview this task</a>}
             </div>
             {notification.status === "Not responsed" && (
               <div
@@ -188,6 +191,27 @@ const Notification = (props) => {
                 </div>
               </div>
             )}
+          </div>
+      </div>
+      }
+      {notification.title === "Task update notification" &&
+        <div
+        className={`notification-container ${
+          notification.isSeen ? "" : "not-seen"
+        }`}
+        onMouseEnter={() => updateIsSeen()}
+      >
+        <img src={imgUrl} alt="" className="sended-user-img" />
+          <div className=" notification-main">
+            {/* <title>Invitation</title> */}
+            <div className="notification-content">
+              <span className="bold-letter">{notification.sendedUserName}</span>{" "}
+              updated a task
+              in <span className="bold-letter">
+                {notification.planName} &nbsp;
+              </span>
+            at {convertTime(notification.createdTime)}.
+            </div>
           </div>
       </div>
       }

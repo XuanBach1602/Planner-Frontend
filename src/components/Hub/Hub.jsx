@@ -92,7 +92,7 @@ const Hub = () => {
         Welcome {user.name}
       </h1>
       <h3 style={{ fontSize: "24px", fontWeight: "400" }}>All</h3>
-      <div className="plan-list-display">
+      {planList && <div className="plan-list-display">
         {statisticalDataList != null &&
           statisticalDataList.map((plan, index) => (
             <div
@@ -237,7 +237,8 @@ const Hub = () => {
               </div>
             </div>
           ))}
-      </div>
+      </div>}
+      {(planList.length === 0) && <h1 style={{color:"#3E9214"}}>Let's create a new plan!</h1>}
     </div>
   );
 };
