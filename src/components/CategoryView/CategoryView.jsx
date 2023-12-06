@@ -114,6 +114,7 @@ const CategoryView = (props) => {
             onKeyDown={(e) => updateCategory(e)}
             defaultValue={category.name}
             readOnly={currentUser?.role === "Member"}
+            title={category.name}
           />
           <DeleteOutlined
             id="delete-category-icon"

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext, useRef } from "react";
 import { Dropdown, Modal, Input } from "antd";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { DatePicker } from "antd";
+import { DatePicker,TimePicker } from "antd";
 import { UserAddOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Select, Space } from "antd";
 import axios from "axios";
@@ -29,7 +29,10 @@ const PreviewTask = (props) => {
     dueDate: "2023-11-03",
     description: "Đây là test task",
     isPrivate: false,
-    isApproved: false
+    isApproved: false,
+    frequency: "Daily",
+    startTime: "08:00",
+    endTime: "10:00",
   };
 
   const [task, setTask] = useState(defaultTask);
@@ -49,6 +52,12 @@ const PreviewTask = (props) => {
     setTask((prevTask) => ({ ...prevTask, isPrivate: value }));
   const setIsApproved = (value) => 
   setTask((prevTask) => ({...prevTask, isApproved: value})) ;
+  const setFrequency = (value) =>
+    setTask((prevTask) => ({ ...prevTask, frequency: value }));
+  const setStartTime = (value) =>
+    setTask((prevTask) => ({ ...prevTask, startTime: value }));
+  const setEndTime = (value) =>
+    setTask((prevTask) => ({ ...prevTask, endTime: value }));
   useEffect(() => {
     if (selectedTask != null) {
       setTaskName(selectedTask?.name);
@@ -62,6 +71,9 @@ const PreviewTask = (props) => {
       setCompletedUserId(selectedTask.completedUserId);
       setIsApproved(selectedTask.isApproved);
       setCreatedUserId(selectedTask.createdUserId);
+      setEndTime(selectedTask.endTime);
+      setStartTime(selectedTask.startTime);
+      setFrequency(selectedTask.frequency);
       setFiles([]);
       setUploadFiles([]);
       const completedUser = userList.find(x => x.userId == selectedTask.completedUserId);
@@ -305,6 +317,49 @@ const PreviewTask = (props) => {
               {
                 value: true,
                 label: "Yes",
+              },
+            ]}
+          />
+        </div>
+        <div className="shift-box">
+        <span style={{ minWidth: "70px", display: "inline-block" }}>
+            Time
+          </span>
+          <TimePicker.RangePicker
+            format="HH:mm" // Định dạng hiển thị chỉ giờ và phút
+            onChange={(values, valueStrings) => {
+              const [startString, endString] = valueStrings;
+              setStartTime(startString);
+              setEndTime(endString);
+            }}
+            style={{width:200}}
+            value={[
+        task.startTime ? dayjs(task.startTime, 'HH:mm') : null,
+        task.endTime ? dayjs(task.endTime, 'HH:mm') : null,
+      ]}
+          />
+        </div>
+        {/* <br /> */}
+        <div className="frequency-box">
+          <span style={{ minWidth: "70px", display: "inline-block" }}>
+            Frequency
+          </span>
+          <Select
+            className="task-selection-item"
+            defaultValue={task.frequency}
+            style={{
+              width: 120,
+            }}
+            value={task.frequency}
+            onChange={(e) => setFrequency(e)}
+            options={[
+              {
+                value: "Daily",
+                label: "Daily",
+              },
+              {
+                value: "Weekly",
+                label: "Weekly",
               },
             ]}
           />

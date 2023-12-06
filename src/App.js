@@ -15,6 +15,7 @@ import { useUser } from "./UserContext";
 import Grid from "./components/Grid/Grid.jsx";
 import { ToastContainer } from 'react-toastify';
 import Notification from "./components/Notification/Notification.jsx";
+import ScheduleCalendar from "./Fullcalendar/Calendar.jsx";
 function App() {
   const { isAuthenticated, setIsAuthenticated } = useUser();
   return (
@@ -34,7 +35,7 @@ function App() {
               <Route path="/" element={<Hub />} />
               <Route path="/plan/:id" element={<Plan />}>
                 <Route path="" index element={<Board />} />
-                <Route path="schedule" element={<Schedule />} />
+                <Route path="schedule" element={<ScheduleCalendar />} />
                 <Route path="grid" element={<Grid />} />
               </Route>
             </Route>

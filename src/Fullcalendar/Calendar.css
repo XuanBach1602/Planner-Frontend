@@ -1,0 +1,47 @@
+:root {
+  --background-color-hover: #a9aaa9;
+}
+.calendar-container {
+  background-color: white;
+  padding: 15px;
+}
+
+.not-started-task {
+  background-color: #949e8f;
+  color: black;
+}
+
+.in-progress-task {
+  background-color: #2bfe00;
+  color: black;
+}
+
+.not-started-task:hover,
+.in-progress-task:hover,
+.completed-task:hover,
+.late-task:hover {
+  background-color: var(--background-color-hover);
+}
+
+.completed-task {
+  background-color: #11c2e9;
+  color: black;
+}
+
+.late-task {
+  background-color: #ff5900;
+  color: white;
+}
+
+.fc-time-grid .fc-content-skeleton {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+}
+
+.hover-event:hover {
+  background-color: #bdbdbc !important;
+}

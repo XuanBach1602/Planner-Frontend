@@ -15,7 +15,8 @@
 .readonly-input .task-selection-item ,
 .readonly-input .assign-box,
 .readonly-input .selection-row,
-.readonly-input #delete-file-icon {
+.readonly-input #delete-file-icon,
+.readonly-input .shift-box {
     pointer-events: none !important;
 }
 
@@ -48,9 +49,6 @@
     grid-template-columns: 1fr 1fr;
 }
 
-.progress-container >* {
-    margin-left: 0px;
-}
 
 .private-box {
     margin-top: 10px;
@@ -60,6 +58,14 @@
     margin-top: 10px;
 }
 
+.frequency-box {
+    margin-top: 10px;
+}
+
+.shift-box {
+    margin-top: 10px;
+    display: flex;
+}
 .file-input  {
     margin-top: 15px;
     display: none;

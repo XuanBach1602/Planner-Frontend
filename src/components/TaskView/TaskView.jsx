@@ -4,7 +4,7 @@ import axios from "axios";
 import { Dropdown, Modal, Input } from "antd";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { DatePicker } from "antd";
+import { DatePicker, TimePicker } from "antd";
 import { UserAddOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Select, Space } from "antd";
 import { useUser } from "../../UserContext";
@@ -14,7 +14,13 @@ dayjs.extend(customParseFormat);
 
 const TaskView = (props) => {
   const { user } = useUser();
-  const { fetchTaskData, currentUser, userList,leader,id:planId } = useContext(PlanContext);
+  const {
+    fetchTaskData,
+    currentUser,
+    userList,
+    leader,
+    id: planId,
+  } = useContext(PlanContext);
   const { TextArea } = Input;
   const selectedTask = props.selectedTask;
   const categoryId = props.categoryId;
@@ -34,11 +40,14 @@ const TaskView = (props) => {
     taskName: "Dang thu",
     progress: "In progress",
     priority: "Medium",
-    startDate: "2023-11-03",
-    dueDate: "2023-11-03",
+    startDate: "2023-12-01",
+    dueDate: "2023-12-10",
     description: "Đây là test task",
     isPrivate: false,
-    isApproved: false
+    isApproved: false,
+    frequency: "Daily",
+    startTime: "08:00",
+    endTime: "10:00",
   };
 
   const [task, setTask] = useState(defaultTask);
@@ -56,12 +65,23 @@ const TaskView = (props) => {
     setTask((prevTask) => ({ ...prevTask, description: value }));
   const setIsPrivate = (value) =>
     setTask((prevTask) => ({ ...prevTask, isPrivate: value }));
-  const setIsApproved = (value) => 
-  setTask((prevTask) => ({...prevTask, isApproved: value})) ;
+  const setIsApproved = (value) =>
+    setTask((prevTask) => ({ ...prevTask, isApproved: value }));
+  const setFrequency = (value) =>
+    setTask((prevTask) => ({ ...prevTask, frequency: value }));
+  const setStartTime = (value) =>
+    setTask((prevTask) => ({ ...prevTask, startTime: value }));
+  const setEndTime = (value) =>
+    setTask((prevTask) => ({ ...prevTask, endTime: value }));
 
-  const setDate = (dueDate) => {
+  const setValidDueDate = (dueDate) => {
     setDueDate(dueDate);
     if (dueDate < task.startDate) setStartDate(dueDate);
+  };
+
+  const setValidStartDate = (startDate) => {
+    setStartDate(startDate);
+    if (task.dueDate < startDate) setDueDate(startDate);
   };
   useEffect(() => {
     if (selectedTask != null) {
@@ -76,9 +96,14 @@ const TaskView = (props) => {
       setCompletedUserId(selectedTask.completedUserId);
       setIsApproved(selectedTask.isApproved);
       setCreatedUserId(selectedTask.createdUserId);
+      setFrequency(selectedTask.frequency);
       setFiles([]);
       setUploadFiles([]);
-      const completedUser = userList.find(x => x.userId == selectedTask.completedUserId);
+      setStartTime(selectedTask.startTime);
+      setEndTime(selectedTask.endTime)
+      const completedUser = userList.find(
+        (x) => x.userId == selectedTask.completedUserId
+      );
       setCompletedUser(completedUser);
       if (
         currentUser.userId !== selectedTask.createdUserId &&
@@ -137,7 +162,7 @@ const TaskView = (props) => {
 
   const checkValid = () => {
     // var isValid = taskName.trim() !== "";
-    var isValid = task.taskName !== "";
+    var isValid = task.taskName !== "" && task.startTime!== "" && task.endTime !== "";
 
     setIsValidInput(isValid);
   };
@@ -177,9 +202,13 @@ const TaskView = (props) => {
         formData.append("createdUserID", user.id);
         formData.append("assignedUserID", assignedUserId);
         formData.append("isPrivate", task.isPrivate);
-        if(task.status === "Completed") formData.append("completedUserID",currentUser.userId);
-        formData.append("isApproved",task.isApproved);
+        if (task.status === "Completed")
+          formData.append("completedUserID", currentUser.userId);
+        formData.append("isApproved", task.isApproved);
         formData.append("isUpdateTask", false);
+        formData.append("frequency", task.frequency);
+        formData.append("startTime", task.startTime);
+        formData.append("endTime", task.endTime);
         if (uploadFiles && uploadFiles.length > 0) {
           for (let i = 0; i < uploadFiles.length; i++) {
             formData.append("attachedFiles", uploadFiles[i]);
@@ -231,9 +260,12 @@ const TaskView = (props) => {
         formData.append("createdUserID", createdUserId);
         formData.append("assignedUserID", assignedUserId);
         formData.append("isPrivate", task.isPrivate);
-        formData.append("completedUserID",completedUserId);
-        formData.append("isApproved",task.isApproved);
+        formData.append("completedUserID", completedUserId);
+        formData.append("isApproved", task.isApproved);
         formData.append("isUpdateTask", false);
+        formData.append("frequency", task.frequency);
+        formData.append("startTime", task.startTime);
+        formData.append("endTime", task.endTime);
         if (uploadFiles && uploadFiles.length > 0) {
           for (let i = 0; i < uploadFiles.length; i++) {
             formData.append("attachedFiles", uploadFiles[i]);
@@ -250,25 +282,28 @@ const TaskView = (props) => {
             },
           }
         );
-        if(currentUser.role !== "Leader")
-        try {
-          const data = {
-            title: "Task update notification",
-            receivedUserId: leader.userId,
-            sendedUserId: user.id,
-            status: "Not responsed",
-            isSeen: false,
-            planId: planId,
-            workTaskId: selectedTask.id
-          };
-          const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/Notification`,data);
-          toast.info("Update the task successfully", {
-            autoClose:1000,
-          })
-          console.log(res);
-        } catch (error) {
-          console.log(error);
-        }
+        if (currentUser.role !== "Leader")
+          try {
+            const data = {
+              title: "Task update notification",
+              receivedUserId: leader.userId,
+              sendedUserId: user.id,
+              status: "Not responsed",
+              isSeen: false,
+              planId: planId,
+              workTaskId: selectedTask.id,
+            };
+            const res = await axios.post(
+              `${process.env.REACT_APP_API_URL}/api/Notification`,
+              data
+            );
+            toast.info("Update the task successfully", {
+              autoClose: 1000,
+            });
+            console.log(res);
+          } catch (error) {
+            console.log(error);
+          }
         // console.log(res);
         setErrorMessage("");
 
@@ -300,7 +335,7 @@ const TaskView = (props) => {
     }
   };
 
-  const addUpdatedVersion = async() => {
+  const addUpdatedVersion = async () => {
     if (isValidInput) {
       try {
         const formData = new FormData();
@@ -315,10 +350,13 @@ const TaskView = (props) => {
         formData.append("createdUserID", user.id);
         formData.append("assignedUserID", assignedUserId);
         formData.append("isPrivate", task.isPrivate);
-        formData.append("completedUserID",completedUserId);
-        formData.append("isApproved",task.isApproved);
+        formData.append("completedUserID", completedUserId);
+        formData.append("isApproved", task.isApproved);
         formData.append("isUpdateTask", true);
-        formData.append("originId", selectedTask.id)
+        formData.append("originId", selectedTask.id);
+        formData.append("frequency", task.frequency);
+        formData.append("startTime", task.startTime);
+        formData.append("endTime", task.endTime);
         if (uploadFiles && uploadFiles.length > 0) {
           for (let i = 0; i < uploadFiles.length; i++) {
             formData.append("attachedFiles", uploadFiles[i]);
@@ -345,12 +383,15 @@ const TaskView = (props) => {
             status: "Not responsed",
             isSeen: false,
             planId: planId,
-            workTaskId: worktask.id
+            workTaskId: worktask.id,
           };
-          const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/Notification`,data);
+          const res = await axios.post(
+            `${process.env.REACT_APP_API_URL}/api/Notification`,
+            data
+          );
           toast.info("Sended request to leader", {
-            autoClose:1000,
-          })
+            autoClose: 1000,
+          });
           console.log(res);
         } catch (error) {
           console.log(error);
@@ -369,7 +410,7 @@ const TaskView = (props) => {
     } else {
       setErrorMessage("Please fill the form");
     }
-  }
+  };
 
   const items = [
     { label: "Select an option", value: "" }, // Lựa chọn trống
@@ -387,10 +428,8 @@ const TaskView = (props) => {
       value: user.userId,
     })),
   ];
-  
 
-  useEffect(() => checkValid(), [task.taskName]);
-
+  useEffect(() => checkValid(), [task.taskName,task.endTime, task.startTime]);
 
   return (
     <Modal
@@ -398,7 +437,13 @@ const TaskView = (props) => {
       centered
       maskClosable={false}
       open={showModal}
-      onOk={() => (selectedTask === null ? addNewTask() : (currentUser.role === "Leader"|| !selectedTask.isApproved) ?updateTask() : addUpdatedVersion())}
+      onOk={() =>
+        selectedTask === null
+          ? addNewTask()
+          : currentUser.role === "Leader" || !selectedTask.isApproved
+          ? updateTask()
+          : addUpdatedVersion()
+      }
       onCancel={() => hideModal()}
       okText={
         selectedTask === null
@@ -426,9 +471,10 @@ const TaskView = (props) => {
           <a>
             <UserAddOutlined /> Assign to
           </a>
-        </label>{" "}<Select
+        </label>{" "}
+        <Select
           id="selectTrigger"
-          style={{width: 200,}}
+          style={{ width: 200 }}
           // suffixIcon={false}
           bordered={false}
           options={items}
@@ -437,25 +483,32 @@ const TaskView = (props) => {
           placeholder="Choose any member"
         />
       </div>
-      {completedUser!== undefined && <div style={{marginTop:"15px"}}>
-        <img
+      {completedUser !== undefined && (
+        <div style={{ marginTop: "15px" }}>
+          <img
             className="assigned-user-img"
             src={`${process.env.REACT_APP_API_URL}/api/file?url=${completedUser.imgUrl}`}
-          /> Completed by {completedUser.userName} at {selectedTask.completedTime}
-        </div>}
+          />{" "}
+          Completed by {completedUser.userName} at {selectedTask.completedTime}
+        </div>
+      )}
       <div className="selection-row">
         <div className="startDate">
           <label htmlFor="" style={{ marginRight: "10px " }}>
             Start Date{" "}
           </label>
           <DatePicker
-            defaultValue={dayjs("2015-01-01", dateFormat)}
+            showTime={{
+              format: "HH:mm",
+            }}
+            defaultValue={dayjs("2023-01-01", dateFormat)}
             format={dateFormat}
             value={dayjs(task.startDate, "YYYY-MM-DD")}
             onChange={(value) => {
               if (value) {
                 const formattedValue = value.format("YYYY-MM-DD");
                 setStartDate(formattedValue);
+                setValidStartDate(formattedValue);
               }
             }}
           />
@@ -465,13 +518,14 @@ const TaskView = (props) => {
             Due Date
           </label>
           <DatePicker
-            defaultValue={dayjs("2015-01-01", dateFormat)}
+            defaultValue={dayjs("2023-01-01", dateFormat)}
             format={dateFormat}
             value={dayjs(task.dueDate, "YYYY-MM-DD")}
             onChange={(value) => {
               if (value) {
+                console.log(value);
                 const formattedValue = value.format("YYYY-MM-DD");
-                setDate(formattedValue);
+                setValidDueDate(formattedValue);
               }
             }}
           />
@@ -586,6 +640,50 @@ const TaskView = (props) => {
             ]}
           />
         </div>
+        <div className="shift-box">
+        <span style={{ minWidth: "70px", display: "inline-block" }}>
+            Time
+          </span>
+          <TimePicker.RangePicker
+            format="HH:mm" // Định dạng hiển thị chỉ giờ và phút
+            onChange={(values, valueStrings) => {
+              const [startString, endString] = valueStrings;
+              setStartTime(startString);
+              setEndTime(endString);
+            }}
+            style={{width:200}}
+            value={[
+        task.startTime ? dayjs(task.startTime, 'HH:mm') : null,
+        task.endTime ? dayjs(task.endTime, 'HH:mm') : null,
+      ]}
+          />
+        </div>
+        {/* <br /> */}
+        <div className="frequency-box">
+          <span style={{ minWidth: "70px", display: "inline-block" }}>
+            Frequency
+          </span>
+          <Select
+            className="task-selection-item"
+            defaultValue={task.frequency}
+            style={{
+              width: 120,
+            }}
+            value={task.frequency}
+            onChange={(e) => setFrequency(e)}
+            options={[
+              {
+                value: "Daily",
+                label: "Daily",
+              },
+              {
+                value: "Weekly",
+                label: "Weekly",
+              },
+            ]}
+          />
+        </div>
+        <br />
       </div>
       <div className="task-description">
         <TextArea

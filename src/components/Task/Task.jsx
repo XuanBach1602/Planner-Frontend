@@ -80,11 +80,11 @@ const Task = (props) => {
           className="status-box"
           onClick={(e) => updateStatus(e)}
         />
-        <p style={{ overflow: "hidden" }}>{taskName}</p>
+        <p style={{ overflow: "hidden" }} title={taskName}>{taskName}</p>
       </div>
       <div className="due-date">
         <CalendarMonthIcon style={{ width: "16px", marginBottom: "3px" }} />{" "}
-        <span className={`${isLate? "late":""}`}>Due: {dueDate}</span>
+        <span className={`${isLate? "late":""}`} style={{fontSize:"14px"}}>Due: {dueDate}</span>
         {assignedUser === undefined && !completedUser && (
           <GroupAddIcon
             style={{
